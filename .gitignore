@@ -1,0 +1,32 @@
+dist
+out
+out-integration
+node_modules
+coverage/
+
+.DS_Store
+
+# Builds
+bin/
+coolcline-*.vsix
+
+# Local prompts and rules
+/local-prompts
+
+# Test environment
+.test_env
+.vscode-test/
+
+# Docs
+docs/_site/
+
+# Dotenv
+.env.integration
+
+re/
+.merge-skip
+.eslintrc.local.json
+
+# Logs
+logs/
+mcpmarketplace/

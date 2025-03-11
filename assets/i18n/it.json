@@ -1,0 +1,725 @@
+{
+	"common": {
+		"done": "Fatto",
+		"add": "Aggiungi",
+		"delete": "Elimina",
+		"rename": "Rinomina",
+		"preview": "Anteprima",
+		"save": "Salva",
+		"cancel": "Annulla",
+		"create": "Crea",
+		"prompt": "Prompt",
+		"validation": {
+			"provideApiKey": "Devi fornire una API Key valida per il LLM Provider corrente o scegliere un altro LLM Provider con una API Key configurata.",
+			"provideRegion": "Devi scegliere una regione da utilizzare con AWS Bedrock.",
+			"provideProjectAndRegion": "Devi fornire un ID progetto e una regione Google Cloud validi.",
+			"provideBaseUrlAndKey": "Devi fornire un Base URL, una API Key e un ID modello validi.",
+			"provideModelId": "Devi fornire un ID modello valido.",
+			"provideModelSelector": "Devi fornire un selettore modello valido.",
+			"modelNotAvailable": "L'ID modello fornito non è disponibile. Scegli un altro modello."
+		},
+		"actions": {
+			"reset": "Ripristina predefiniti",
+			"edit": "Modifica",
+			"save": "Salva",
+			"cancel": "Annulla",
+			"close": "Chiudi",
+			"doneEditing": "Modifica completata"
+		},
+		"status": {
+			"loading": "Caricamento...",
+			"error": "Errore",
+			"success": "Successo"
+		},
+		"noDescription": "Nessuna descrizione",
+		"unknown": "Sconosciuto"
+	},
+	"welcome": {
+		"title": "Cos'è CoolCline?",
+		"description": "CoolCline è un assistente di programmazione proattivo che migliora il tuo flusso di lavoro di sviluppo con capacità AI avanzate. Ti aiuta a scrivere codice in modo più efficiente, ottimizzare le query, correggere automaticamente gli errori, eseguire attività da riga di comando e eseguire test di automazione del browser.",
+		"readmeLink": "README",
+		"llmProviderNeeded": "Per iniziare, questa estensione richiede almeno un Provider LLM configurato (obbligatorio).",
+		"letsGo": "Iniziamo!"
+	},
+	"chat": {
+		"welcome": {
+			"title": "Cosa posso fare per te?",
+			"description": "CoolCline è un assistente di programmazione proattivo che migliora il tuo flusso di lavoro di sviluppo con capacità AI avanzate. Ti aiuta a scrivere codice in modo più efficiente, ottimizzare le query, correggere automaticamente gli errori, eseguire attività da riga di comando e eseguire test di automazione del browser.",
+			"readMore": "README"
+		},
+		"browser": {
+			"action": "Azione browser",
+			"launch": "Avvia browser su {url}",
+			"click": "Clic ({coordinate})",
+			"type": "Digita \"{text}\"",
+			"scrollDown": "Scorri verso il basso",
+			"scrollUp": "Scorri verso l'alto",
+			"close": "Chiudi browser"
+		},
+		"task": {
+			"title": "Attività",
+			"seeMore": "Vedi di più",
+			"seeLess": "Vedi di meno",
+			"tokens": "Tokens",
+			"context": "Contesto",
+			"cache": "Cache",
+			"apiCost": "Costo API",
+			"export": "ESPORTA"
+		},
+		"messages": {
+			"error": "Errore",
+			"trouble": "CoolCline sta avendo problemi...",
+			"executeCommand": "CoolCline vuole eseguire questo comando:",
+			"useTool": "usa uno strumento",
+			"accessResource": "accedi a una risorsa",
+			"taskCompleted": "Attività completata",
+			"apiCancelled": "Richiesta API annullata",
+			"apiStreamingFailed": "Streaming API fallito",
+			"apiRequest": "Richiesta API",
+			"apiFailed": "Richiesta API fallita",
+			"apiInProgress": "Richiesta API...",
+			"question": "CoolCline ha una domanda:",
+			"searchDirectory": "CoolCline vuole cercare in questa directory",
+			"searchedDirectory": "CoolCline ha cercato in questa directory",
+			"switchMode": "CoolCline vuole passare alla modalità",
+			"switchedMode": "CoolCline è passato alla modalità",
+			"modeBecause": "modalità perché:",
+			"mode": "modalità",
+			"response": "Risposta",
+			"copyAsMarkdown": "Copia come Markdown",
+			"warning": "Avviso",
+			"taskIsRunningNote": "Un'attività è attualmente in esecuzione. Puoi:",
+			"taskIsRunningSelect1": "1. Attendere il completamento dell'attività corrente",
+			"taskIsRunningSelect2": "2. Annullare l'attività corrente"
+		},
+		"actions": {
+			"send": "Invia",
+			"cancelTask": "Annulla attività",
+			"await": "Attendi",
+			"edit": "Modifica...",
+			"separator": "────",
+			"newChat": "Nuova chat",
+			"cancel": "Annulla",
+			"retry": "Riprova",
+			"startNewTask": "Inizia nuovo compito",
+			"proceedAnyways": "Procedi comunque",
+			"save": "Salva",
+			"reject": "Rifiuta",
+			"approve": "Approva",
+			"runCommand": "Esegui comando",
+			"proceedWhileRunning": "Procedi durante l'esecuzione",
+			"resumeTask": "Riprendi compito",
+			"terminate": "Termina"
+		},
+		"announcement": {
+			"title": "🎉 Presentazione di CoolCline",
+			"customization": {
+				"title": "Modalità personalizzate: Celebriamo la nostra nuova identità",
+				"description": "Per segnare questo nuovo capitolo, stiamo introducendo il potere di plasmare CoolCline in qualsiasi ruolo tu abbia bisogno! Crea persone specializzate e un intero team di agenti con prompt profondamente personalizzati:",
+				"examples": {
+					"qa": "Ingegneri QA che scrivono casi di test approfonditi e individuano casi limite",
+					"pm": "Product Manager che eccellono nelle user story e nella prioritizzazione delle funzionalità",
+					"ui": "Designer UI/UX che creano interfacce belle e accessibili",
+					"reviewer": "Revisori di codice che assicurano qualità e manutenibilità"
+				},
+				"getStarted": "Basta cliccare sull'icona del taccuino per iniziare con le modalità personalizzate!"
+			},
+			"join": {
+				"title": "Unisciti a noi per il prossimo capitolo",
+				"description": "Non vediamo l'ora di vedere come spingerai il potenziale di CoolCline ancora più lontano! Condividi le tue modalità personalizzate e unisciti alla discussione su"
+			}
+		},
+		"autoApprove": {
+			"title": "Approvazione automatica",
+			"none": "Nessuna",
+			"description": "L'approvazione automatica permette a CoolCline di eseguire azioni senza chiedere il permesso. Attiva solo per le azioni di cui ti fidi completamente.",
+			"actions": {
+				"readFiles": {
+					"label": "Leggi file e directory",
+					"description": "Permette l'accesso in lettura a qualsiasi file sul tuo computer."
+				},
+				"editFiles": {
+					"label": "Modifica file",
+					"description": "Permette la modifica di qualsiasi file sul tuo computer."
+				},
+				"executeCommands": {
+					"label": "Esegui comandi approvati",
+					"description": "Permette l'esecuzione di comandi del terminale approvati. Puoi configurare questo nel pannello delle impostazioni."
+				},
+				"useBrowser": {
+					"label": "Usa il browser",
+					"description": "Permette di avviare e interagire con qualsiasi sito web in un browser headless."
+				},
+				"useMcp": {
+					"label": "Usa server MCP",
+					"description": "Permette l'uso di server MCP configurati che possono modificare il filesystem o interagire con le API."
+				},
+				"switchModes": {
+					"label": "Cambia modalità e crea attività",
+					"description": "Permette il cambio automatico tra diverse modalità AI e la creazione di nuove attività senza richiedere approvazione."
+				},
+				"retryRequests": {
+					"label": "Riprova richieste fallite",
+					"description": "Riprova automaticamente le richieste API fallite quando il provider restituisce una risposta di errore."
+				}
+			}
+		},
+		"contextMenu": {
+			"problems": "Problemi",
+			"pasteUrl": "Incolla URL per ottenere il contenuto",
+			"noResults": "Nessun risultato trovato",
+			"gitCommits": "Commit Git",
+			"addFile": "Aggiungi file",
+			"addFolder": "Aggiungi cartella"
+		},
+		"reasoning": {
+			"title": "Ragionamento"
+		},
+		"input": {
+			"typeMessage": "Scrivi un messaggio...",
+			"typeTask": "Scrivi il tuo compito qui...",
+			"addContext": "(@ per aggiungere contesto",
+			"switchMode": ", / per cambiare modalità",
+			"dragImages": ", tieni premuto Shift per trascinare le immagini"
+		}
+	},
+	"prompts": {
+		"settings": {
+			"sections": {
+				"general": "Impostazioni generali dei prompt",
+				"modes": "Impostazioni dei prompt delle modalità",
+				"tools": "Impostazioni dei prompt di supporto"
+			},
+			"language": {
+				"title": "Impostazioni lingua",
+				"description": "Imposta la lingua di risposta del LLM Provider (l'interfaccia cambierà anche nella lingua selezionata)",
+				"select": "Seleziona lingua"
+			},
+			"customInstructions": {
+				"title": "Istruzioni Prompt generali",
+				"description": "Queste istruzioni Prompt si applicano a tutte le modalità come linee guida di comportamento di base. Puoi estenderle con istruzioni specifiche per modalità qui sotto",
+				"loadFrom": "Le istruzioni Prompt possono anche essere caricate da",
+				"inWorkspace": "nel tuo spazio di lavoro"
+			},
+			"modePrompts": {
+				"title": "Configurazione Prompt",
+				"description": "Clicca su + per creare una nuova modalità ruolo, o chiedi direttamente a CoolCline nella chat di crearne una per te!",
+				"createMode": "Crea nuova modalità ruolo",
+				"editConfig": "Modifica configurazione modalità ruolo",
+				"name": "Nome",
+				"specificPrompts": "Prompt specifici della modalità",
+				"slug": {
+					"title": "Identificatore",
+					"description": "Un identificatore univoco utilizzato negli URL e nei nomi dei file, deve contenere solo lettere minuscole, numeri e trattini"
+				},
+				"roleDefinition": {
+					"title": "Definizione del ruolo",
+					"description": "Definisci l'esperienza e i tratti della personalità di CoolCline per questa modalità, che determineranno il suo stile di lavoro e comportamento",
+					"createDescription": "Definisci l'esperienza e i tratti della personalità per questa modalità"
+				},
+				"apiConfig": {
+					"title": "Configurazione LLM Provider",
+					"description": "Seleziona la configurazione LLM Provider per questa modalità ruolo, come claude-3.5-sonnet o deepseek-r1 (configurabile nella pagina delle impostazioni)",
+					"useCurrentConfig": "Usa la configurazione LLM Provider corrente",
+					"enhancePrompts": "Seleziona una configurazione LLM Provider specifica per il miglioramento dei prompt, come claude-3.5-sonnet o deepseek-r1 (configurabile nella pagina delle impostazioni)"
+				},
+				"tools": {
+					"title": "Strumenti disponibili",
+					"cannotModify": "Gli strumenti per le modalità integrate non possono essere modificati",
+					"selectTools": "Seleziona quali strumenti questa modalità può utilizzare",
+					"availableTitle": "Lista degli strumenti disponibili",
+					"selectDescription": "Seleziona quali strumenti questa modalità può utilizzare"
+				},
+				"customInstructions": {
+					"title": "Istruzioni specifiche della modalità",
+					"description": "Aggiungi linee guida comportamentali specifiche per la modalità {mode}",
+					"loadFrom": "Le istruzioni specifiche della modalità {mode} possono anche essere caricate da",
+					"inWorkspace": "nel tuo spazio di lavoro",
+					"createDescription": "Aggiungi linee guida comportamentali specifiche per questa modalità",
+					"modeSpecific": "Istruzioni specifiche della modalità"
+				},
+				"preview": "Anteprima del prompt di sistema"
+			},
+			"api": {
+				"title": "Impostazioni API",
+				"configProfile": {
+					"title": "Profili di configurazione",
+					"description": "Configura i profili API per passare rapidamente tra i provider nella barra di input della chat"
+				},
+				"model": {
+					"title": "Modello",
+					"search": "Cerca modelli...",
+					"selected": "Modello attualmente selezionato:"
+				},
+				"provider": {
+					"title": "Provider",
+					"openai": "OpenAI",
+					"glama": "Glama",
+					"openRouter": "OpenRouter"
+				}
+			},
+			"experimental": {
+				"title": "Funzionalità sperimentali",
+				"description": "Attiva o disattiva le funzionalità sperimentali"
+			}
+		},
+		"support": {
+			"title": "Impostazioni dei prompt di supporto",
+			"enhance": {
+				"title": "Migliora",
+				"testPrompt": "Inserisci un prompt per testare il miglioramento",
+				"preview": "Anteprima del miglioramento del prompt",
+				"enterPrompt": "Inserisci un prompt per testare il miglioramento"
+			},
+			"prompts": {
+				"enhance": {
+					"label": "Miglioramento dei prompt",
+					"description": "Ottieni suggerimenti e miglioramenti più precisi attraverso il miglioramento dei prompt. Questo assicura che CoolCline comprenda con precisione la tua intenzione e fornisca la migliore risposta. Disponibile tramite l'icona ✨ nell'interfaccia della chat."
+				},
+				"explain": {
+					"label": "Spiegazione del codice",
+					"description": "Ottieni spiegazioni dettagliate di frammenti di codice, funzioni o file interi. Adatto per comprendere codice complesso o imparare nuovi pattern di programmazione. Disponibile tramite i suggerimenti intelligenti (icona lampadina) o menu contestuale nell'editor."
+				},
+				"fix": {
+					"label": "Correzione dei problemi",
+					"description": "Aiuta a identificare e risolvere errori di programma, bug o problemi di qualità del codice, fornendo una guida passo passo per la correzione. Disponibile tramite i suggerimenti intelligenti (icona lampadina) o menu contestuale nell'editor."
+				},
+				"improve": {
+					"label": "Ottimizzazione del codice",
+					"description": "Ottieni suggerimenti per l'ottimizzazione del codice, best practice e miglioramenti architetturali mantenendo la funzionalità. Disponibile tramite i suggerimenti intelligenti (icona lampadina) o menu contestuale nell'editor."
+				},
+				"addToContext": {
+					"label": "Aggiungi al contesto",
+					"description": "Aggiungi informazioni supplementari all'attività o alla conversazione corrente. Utilizzato per fornire spiegazioni aggiuntive o dettagli chiarificatori. Disponibile tramite i suggerimenti intelligenti (icona lampadina) o menu contestuale nell'editor."
+				},
+				"terminalAddToContext": {
+					"label": "Aggiungi contenuto del terminale al contesto",
+					"description": "Aggiungi l'output del terminale al tuo compito o conversazione corrente. Utile per fornire output di comandi o log. Disponibile nel menu contestuale del terminale (clic destro sul contenuto selezionato del terminale)."
+				},
+				"terminalFix": {
+					"label": "Correggi comando del terminale",
+					"description": "Ottieni aiuto per correggere i comandi del terminale che sono falliti o necessitano di miglioramenti. Disponibile nel menu contestuale del terminale (clic destro sul contenuto selezionato del terminale)."
+				},
+				"terminalExplain": {
+					"label": "Spiega comando del terminale",
+					"description": "Ottieni spiegazioni dettagliate dei comandi del terminale e dei loro output. Disponibile nel menu contestuale del terminale (clic destro sul contenuto selezionato del terminale)."
+				}
+			}
+		}
+	},
+	"mcp": {
+		"title": "Server MCP",
+		"modelContextProtocol": "Protocollo di Contesto del Modello",
+		"description": {
+			"part1": "Attiva la comunicazione con i server MCP locali che forniscono strumenti e risorse aggiuntive per estendere le capacità di CoolCline. Puoi utilizzare",
+			"part2": "o chiedere a CoolCline di creare nuovi strumenti per i tuoi flussi di lavoro (ad esempio, \"crea uno strumento per ottenere l'ultima documentazione npm\")."
+		},
+		"communityServers": "Server della community",
+		"enable": {
+			"title": "Attiva server MCP",
+			"description": "Quando attivato, CoolCline può comunicare con i server MCP per funzionalità speciali. Se non usi MCP, puoi disattivare questo per ridurre l'utilizzo dei token di CoolCline."
+		},
+		"serverCreation": {
+			"title": "Attiva creazione server MCP",
+			"description": "Quando attivato, CoolCline può aiutarti a creare nuovi server MCP con comandi come \"crea strumento...\". Se non hai bisogno di creare server MCP, puoi disattivare questo per ridurre l'utilizzo dei token di CoolCline."
+		},
+		"editSettings": "Modifica impostazioni MCP",
+		"tools": {
+			"title": "Strumenti",
+			"parameters": "Parametri",
+			"alwaysAllow": "Consenti sempre",
+			"noTools": "Nessuno strumento trovato"
+		},
+		"resources": {
+			"title": "Risorse",
+			"returns": "Valori di ritorno",
+			"noResources": "Nessuna risorsa trovata"
+		},
+		"timeout": {
+			"15": "15 secondi",
+			"30": "30 secondi",
+			"60": "1 minuto",
+			"300": "5 minuti",
+			"600": "10 minuti",
+			"900": "15 minuti",
+			"1800": "30 minuti",
+			"3600": "60 minuti",
+			"title": "Timeout di rete",
+			"description": "Tempo massimo di attesa per la risposta del server"
+		},
+		"server": {
+			"restart": "Riavvia server",
+			"restarting": "Riavvio in corso...",
+			"retry": "Riprova connessione",
+			"retrying": "Nuovo tentativo..."
+		}
+	},
+	"history": {
+		"title": "Cronologia",
+		"search": {
+			"placeholder": "Cerca nella cronologia...",
+			"clear": "Cancella ricerca"
+		},
+		"sort": {
+			"newest": "Più recenti",
+			"oldest": "Più vecchi",
+			"mostExpensive": "Più costosi",
+			"mostTokens": "Più token",
+			"mostRelevant": "Più rilevanti"
+		},
+		"preview": {
+			"recentTasks": "Attività recenti",
+			"viewAll": "Visualizza tutta la cronologia",
+			"promptCopied": "Prompt copiato negli appunti",
+			"copyPrompt": "Copiato",
+			"metrics": {
+				"tokens": "Token",
+				"cache": "Cache",
+				"apiCost": "Costo API"
+			}
+		}
+	},
+	"settings": {
+		"title": "Impostazioni",
+		"done": "Fatto",
+		"provider": {
+			"title": "Impostazioni LLM Provider",
+			"llmProvider": "LLM Provider",
+			"apiKey": {
+				"title": "API Key",
+				"placeholder": "Inserisci la tua LLM Provider API Key",
+				"storedLocally": "La LLM Provider API Key viene memorizzata in modo sicuro sul tuo computer",
+				"getKey": "Ottieni LLM Provider API Key"
+			},
+			"customBaseUrl": {
+				"title": "Base URL personalizzato",
+				"placeholder": "Predefinito: {{defaultUrl}}"
+			},
+			"configProfile": {
+				"title": "Configurazione opzioni rapide LLM Provider",
+				"description": "Qui puoi creare e gestire più opzioni LLM Provider. Puoi creare opzioni separate per diversi modelli dello stesso LLM Provider, ogni opzione salva la configurazione completa del LLM Provider corrente. Dopo la creazione, puoi passare tra le configurazioni in tempo reale dalla barra di input della chat. La configurazione include: LLM Provider, API Key, Model e altre impostazioni specifiche del LLM Provider. Passaggi per creare un'opzione LLM Provider (il passo 4 può essere scambiato con 2 e 3): 1. Clicca il pulsante +, il sistema copierà automaticamente un'opzione dalla configurazione corrente, nominata xx (copy); 2. Clicca l'icona ✏️ per modificare il nome dell'opzione; 3. Clicca ☑️ per salvare il nome dell'opzione; 4. Regola i parametri principali come Model secondo necessità (le modifiche vengono salvate automaticamente quando l'editor perde il focus). Suggerimenti per i nomi delle opzioni: Si consiglia una struttura \"provider-versione-modello-caratteristica\", ad esempio: openrouter-deepseek-v3-free; openrouter-deepseek-r1-free; deepseek-v3-ufficiale; deepseek-r1-ufficiale."
+			},
+			"providers": {
+				"anthropic": {
+					"name": "Anthropic",
+					"title": "Anthropic API Key",
+					"baseUrl": "Base URL (opzionale)",
+					"enterBaseUrl": "Inserisci API Base URL",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Puoi registrarti qui per ottenere una Anthropic API Key"
+				},
+				"openai": {
+					"name": "OpenAI compatibile",
+					"title": "Servizio compatibile con OpenAI",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Inserisci Base URL",
+					"useAzure": "Usa Azure OpenAI",
+					"setAzureVersion": "Imposta versione API Azure",
+					"description": "Usa servizio API compatibile con OpenAI",
+					"streaming": "Abilita streaming",
+					"modelConfig": {
+						"title": "Configurazione del modello",
+						"description": "Configura capacità e informazioni sui prezzi del modello",
+						"capabilities": {
+							"title": "Capacità del modello",
+							"description": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI",
+							"warning": "Fai attenzione alle capacità del modello, poiché possono influenzare il funzionamento di CoolCline",
+							"maxTokens": {
+								"title": "Token massimi di output",
+								"description": "Numero massimo di token che il modello può generare in una risposta",
+								"note": "(-1 dipende dal server)"
+							},
+							"contextWindow": {
+								"title": "Dimensione finestra di contesto",
+								"description": "Numero totale di token (input + output) che il modello può elaborare. Questo aiuta CoolCline Code a funzionare correttamente"
+							}
+						},
+						"features": {
+							"title": "Funzionalità del modello",
+							"imageSupport": {
+								"title": "Supporto immagini",
+								"description": "Abilita se il modello può elaborare e comprendere le immagini nell'input. Necessario per assistenza basata su immagini e comprensione visiva del codice",
+								"note": "Permette al modello di analizzare e comprendere le immagini, essenziale per l'assistenza visiva del codice"
+							},
+							"computerUse": {
+								"title": "Uso del computer",
+								"description": "Abilita se il modello può interagire con il tuo computer tramite comandi e operazioni sui file. Necessario per attività automatizzate e modifiche ai file",
+								"note": "Questa funzionalità del modello è per l'uso del computer come il supporto sonnet 3.5"
+							}
+						},
+						"pricing": {
+							"title": "Prezzi del modello",
+							"description": "Configura i prezzi basati sui token in USD per milione di token",
+							"inputPrice": {
+								"title": "Prezzo di input",
+								"description": "Costo per milione di token nell'input/prompt. Questo influisce sul costo di invio del contesto e delle istruzioni al modello"
+							},
+							"outputPrice": {
+								"title": "Prezzo di output",
+								"description": "Costo per milione di token nella risposta del modello. Questo influisce sul costo del contenuto generato e dei completamenti"
+							}
+						}
+					}
+				},
+				"openaiNative": {
+					"name": "OpenAI Native",
+					"title": "OpenAI API Key",
+					"description": "Usa servizio API ufficiale OpenAI",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Puoi registrarti qui per ottenere una OpenAI API Key"
+				},
+				"glama": {
+					"name": "Glama",
+					"title": "Glama API Key",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Ottieni Glama API Key"
+				},
+				"bedrock": {
+					"name": "AWS Bedrock",
+					"title": "AWS Bedrock",
+					"credentials": "Credenziali AWS",
+					"profile": "Profilo AWS",
+					"accessKey": "ID chiave di accesso",
+					"secretKey": "Chiave segreta",
+					"sessionToken": "Token di sessione (opzionale)",
+					"region": "Regione",
+					"selectRegion": "Seleziona regione",
+					"useCrossRegion": "Usa inferenza cross-region",
+					"description": "Usa servizio modelli AI AWS Bedrock",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Configura credenziali AWS"
+				},
+				"openRouter": {
+					"name": "OpenRouter",
+					"title": "OpenRouter API Key",
+					"getKey": "Ottieni OpenRouter API Key",
+					"compressPrompts": "Comprimi prompt e catene di messaggi alla dimensione del contesto",
+					"transforms": "OpenRouter trasformazioni",
+					"useCustomBaseUrl": "Usa Base URL personalizzato"
+				},
+				"vertex": {
+					"name": "Google Vertex AI",
+					"title": "Google Vertex AI",
+					"projectId": "ID Progetto Google Cloud",
+					"enterProjectId": "Inserisci ID progetto",
+					"region": "Regione Google Cloud",
+					"selectRegion": "Seleziona regione",
+					"description": "Per utilizzare Google Cloud Vertex AI, devi 1) creare un account Google Cloud › attivare l'API Vertex AI › attivare i modelli Claude richiesti, 2) installare Google Cloud CLI › configurare le credenziali predefinite dell'applicazione.",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Ottieni Google Vertex AI API Key"
+				},
+				"mistral": {
+					"name": "Mistral",
+					"title": "Mistral API Key",
+					"description": "Usa il servizio modelli Mistral AI",
+					"getKey": "Puoi registrarti qui per ottenere una Mistral API Key",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"placeholder": "Inserisci API Key..."
+				},
+				"gemini": {
+					"name": "Gemini",
+					"title": "Gemini API Key",
+					"description": "Usa il modello Gemini AI di Google",
+					"getKey": "Ottieni Gemini API Key",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"placeholder": "Inserisci API Key..."
+				},
+				"ollama": {
+					"name": "Ollama",
+					"title": "Ollama",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Inserisci Base URL",
+					"modelId": "ID Modello",
+					"enterModelId": "Esempio: meta-llama-3.1-8b-instruct",
+					"description": "Ollama permette di eseguire modelli linguistici open source localmente",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Configura Ollama",
+					"quickstartGuide": "Guida rapida",
+					"localServer": "Server locale"
+				},
+				"lmstudio": {
+					"name": "LM Studio",
+					"title": "LM Studio",
+					"baseUrl": "Base URL (opzionale)",
+					"modelId": "ID modello",
+					"enterModelId": "Esempio: meta-llama-3.1-8b-instruct",
+					"description": "LM Studio ti permette di eseguire modelli sul tuo computer locale. Consulta la guida rapida per istruzioni su come iniziare. Dovrai anche avviare la funzione server locale di LM Studio per utilizzarlo con questa estensione.",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"getKey": "Configura LM Studio",
+					"quickstartGuide": "Guida rapida",
+					"localServer": "Server locale"
+				},
+				"vscode": {
+					"name": "GitHub Copilot LLM API",
+					"title": "VS Code LM API",
+					"description": "Usa l'API del modello linguistico integrato di VS Code",
+					"modelSelector": "Modello linguistico",
+					"selectModel": "Seleziona modello...",
+					"noModels": "Impossibile ottenere i modelli supportati da VS Code LM API! Nota: Se viene visualizzato questo messaggio, significa che un'operazione non è stata completata. Segui le istruzioni per completare l'operazione. Devi prima cercare, installare e accedere a GitHub Copilot nel marketplace delle estensioni di VS Code prima che CoolCline possa accedere ai loro modelli. Non è necessaria la configurazione della chiave API poiché l'account connesso gestisce questo.",
+					"experimentalNote": "Nota: Questa funzionalità potrebbe essere instabile. Se si verificano anomalie, invia un issue a CoolCline per feedback.",
+					"useCustomBaseUrl": "Usa Base URL personalizzato"
+				},
+				"unbound": {
+					"name": "Unbound",
+					"title": "Unbound API Key",
+					"getKey": "Ottieni Unbound API Key",
+					"useCustomBaseUrl": "Usa Base URL personalizzato"
+				},
+				"deepseek": {
+					"name": "DeepSeek",
+					"title": "DeepSeek API Key",
+					"description": "Usa il servizio modelli AI ad alte prestazioni di DeepSeek",
+					"getKey": "Puoi registrarti qui per ottenere una DeepSeek API Key",
+					"useCustomBaseUrl": "Usa Base URL personalizzato",
+					"placeholder": "Inserisci API Key..."
+				}
+			},
+			"model": {
+				"title": "Modello",
+				"selectPlaceholder": "Seleziona modello...",
+				"currentlySelected": "Modello attualmente selezionato:",
+				"search": "Cerca modelli..."
+			},
+			"common": {
+				"modelCapabilityNote": "Nota: CoolCline utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità limitate potrebbero non funzionare come previsto."
+			},
+			"temperature": {
+				"title": "Usa temperatura personalizzata",
+				"description": "Controlla la casualità delle risposte del modello. Valori più alti rendono l'output più casuale, mentre valori più bassi lo rendono più deterministico."
+			}
+		},
+		"autoApprove": {
+			"title": "Impostazioni approvazione automatica",
+			"description": "Queste impostazioni permettono a CoolCline di eseguire azioni senza approvazione. Attiva queste impostazioni solo se ti fidi completamente dell'AI e comprendi i rischi per la sicurezza.",
+			"readOnly": {
+				"title": "Approva sempre azioni in sola lettura",
+				"description": "Quando attivato, CoolCline può vedere il contenuto delle directory e leggere i file senza cliccare sul pulsante di approvazione."
+			},
+			"write": {
+				"title": "Approva sempre azioni di scrittura",
+				"description": "Crea e modifica file automaticamente senza approvazione",
+				"delay": {
+					"title": "Ritardo di scrittura",
+					"description": "Ritardo dopo la scrittura per diagnosticare potenziali problemi"
+				}
+			},
+			"browser": {
+				"title": "Approva sempre azioni del browser",
+				"description": "Esegui azioni del browser automaticamente senza approvazione Nota: si applica solo se il modello supporta l'uso del computer"
+			},
+			"retry": {
+				"title": "Riprova sempre richieste API fallite",
+				"description": "Riprova automaticamente le richieste API fallite quando il server restituisce un errore",
+				"delay": {
+					"title": "Ritardo di ripetizione",
+					"description": "Ritardo prima di riprovare la richiesta"
+				}
+			},
+			"mcp": {
+				"title": "Approva sempre strumenti MCP",
+				"description": "Attiva l'approvazione automatica degli strumenti MCP individuali nella vista server MCP (richiede sia questa impostazione che la casella \"Consenti sempre\" dello strumento individuale)"
+			},
+			"modeSwitch": {
+				"title": "Approva sempre cambi di modalità e creazione attività",
+				"description": "Passa automaticamente tra modalità AI e crea nuove attività senza approvazione"
+			},
+			"execute": {
+				"title": "Approva sempre azioni di esecuzione consentite",
+				"description": "Esegui automaticamente comandi del terminale consentiti senza approvazione",
+				"commands": {
+					"title": "Consenti comandi per esecuzione automatica",
+					"description": "Prefissi di comando che possono essere eseguiti automaticamente quando \"Approva sempre azioni di esecuzione consentite\" è attivato.",
+					"placeholder": "Inserisci un prefisso di comando (es: 'git ')",
+					"add": "Aggiungi"
+				}
+			}
+		},
+		"browser": {
+			"title": "Impostazioni browser",
+			"viewport": {
+				"title": "Dimensione finestra",
+				"description": "Seleziona la dimensione della finestra per le interazioni del browser. Questo influisce su come i siti web vengono visualizzati e interagiscono.",
+				"options": {
+					"largeDesktop": "Desktop grande (1280x800)",
+					"smallDesktop": "Desktop piccolo (900x600)",
+					"tablet": "Tablet (768x1024)",
+					"mobile": "Mobile (360x640)"
+				}
+			},
+			"screenshot": {
+				"title": "Qualità screenshot",
+				"description": "Regola la qualità WebP degli screenshot del browser. Valori più alti forniscono screenshot più nitidi ma aumentano l'utilizzo dei token."
+			}
+		},
+		"notification": {
+			"title": "Impostazioni notifiche",
+			"sound": {
+				"title": "Attiva suono",
+				"description": "Quando attivato, CoolCline riprodurrà suoni per notifiche ed eventi.",
+				"volume": "Volume"
+			}
+		},
+		"advanced": {
+			"title": "Impostazioni avanzate",
+			"experimental": {
+				"warning": "⚠️",
+				"features": {
+					"diffStrategy": {
+						"name": "Usa strategia diff sperimentale",
+						"description": "Quando attivato, CoolCline userà una strategia diff più avanzata in grado di gestire modifiche al codice più complesse. Questo è ancora sperimentale e potrebbe non funzionare in tutti i casi."
+					}
+				}
+			},
+			"rateLimit": {
+				"title": "Limite di frequenza",
+				"description": "Intervallo minimo tra le richieste API."
+			},
+			"terminalOutput": {
+				"title": "Limite output terminale",
+				"description": "Numero massimo di righe da includere nell'output del terminale durante l'esecuzione dei comandi. Le righe nel mezzo verranno rimosse se superato per risparmiare token."
+			},
+			"diff": {
+				"title": "Attiva modifica per diff",
+				"description": "Quando attivato, CoolCline può modificare i file più velocemente e rifiutare automaticamente le scritture complete di file non filtrati. Funziona meglio con i modelli Claude 3.5 Sonnet più recenti.",
+				"matchPrecision": {
+					"title": "Precisione corrispondenza",
+					"description": "Questo cursore controlla quanto precisamente i frammenti di codice devono corrispondere quando si applicano i diff. Valori più bassi permettono corrispondenze più flessibili ma aumentano il rischio di sostituzioni errate. Usa valori inferiori al 100% con cautela."
+				}
+			},
+			"checkpoints": {
+				"title": "Gestione snapshot Git",
+				"enable": "Abilita checkpoint",
+				"description": "Quando abilitato, CoolCline creerà automaticamente snapshot Git dopo che l'IA esegue operazioni di modifica dei file (come: scrittura di file, applicazione di differenze, inserimento di contenuti, ecc.). Supporta il salvataggio, il ripristino e il confronto degli stati del codice.",
+				"features": {
+					"save": "Salvataggio automatico degli snapshot del codice",
+					"diff": "Supporto per il confronto degli snapshot",
+					"restore": "Supporto per il ripristino dello stato del codice",
+					"integration": "Integrazione perfetta con il controllo versione Git"
+				}
+			}
+		},
+		"experiments": {
+			"title": "Funzionalità sperimentali",
+			"description": "Attiva o disattiva funzionalità in sviluppo",
+			"features": {
+				"DIFF_STRATEGY": {
+					"name": "Usa strategia diff unificata sperimentale",
+					"description": "Attiva la strategia diff unificata sperimentale. Questa strategia può ridurre il numero di tentativi dovuti a errori del modello, ma può portare a comportamenti inaspettati o modifiche errate. Attiva solo se comprendi i rischi e sei pronto a rivedere attentamente tutte le modifiche."
+				},
+				"SEARCH_AND_REPLACE": {
+					"name": "Usa strumento cerca e sostituisci sperimentale",
+					"description": "Attiva lo strumento cerca e sostituisci sperimentale che permette a CoolCline di sostituire più istanze di un termine di ricerca in una singola richiesta."
+				},
+				"INSERT_BLOCK": {
+					"name": "Usa strumento inserimento blocco sperimentale",
+					"description": "Attiva lo strumento inserimento blocco sperimentale che permette a CoolCline di inserire contenuto a numeri di riga specifici senza creare un diff."
+				}
+			}
+		},
+		"footer": {
+			"description": "Se hai domande o feedback, apri un issue qui",
+			"resetState": "Reimposta stato",
+			"resetStateDescription": "Questo reimposterà tutto lo stato globale dell'estensione e l'archivio segreto."
+		}
+	}
+}

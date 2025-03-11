@@ -1,0 +1,725 @@
+{
+	"common": {
+		"done": "完了",
+		"add": "追加",
+		"delete": "削除",
+		"rename": "名前を変更",
+		"preview": "プレビュー",
+		"save": "保存",
+		"cancel": "キャンセル",
+		"create": "作成",
+		"prompt": "プロンプト",
+		"validation": {
+			"provideApiKey": "有効な LLM Provider API Key を入力するか、API Key が設定済みの他の LLM Provider を選択してください。",
+			"provideRegion": "AWS Bedrockで使用するリージョンを選択してください。",
+			"provideProjectAndRegion": "有効なGoogle CloudプロジェクトIDとリージョンを入力してください。",
+			"provideBaseUrlAndKey": "有効な Base URL、API Key、モデル ID を入力してください。",
+			"provideModelId": "有効なモデルIDを入力してください。",
+			"provideModelSelector": "有効なモデルセレクターを入力してください。",
+			"modelNotAvailable": "指定されたモデルIDは利用できません。別のモデルを選択してください。"
+		},
+		"actions": {
+			"reset": "デフォルトにリセット",
+			"edit": "編集",
+			"save": "保存",
+			"cancel": "キャンセル",
+			"close": "閉じる",
+			"doneEditing": "編集完了"
+		},
+		"status": {
+			"loading": "読み込み中...",
+			"error": "エラー",
+			"success": "成功"
+		},
+		"noDescription": "説明なし",
+		"unknown": "不明"
+	},
+	"welcome": {
+		"title": "CoolClineとは？",
+		"description": "CoolClineは、高度なAI機能であなたの開発ワークフローを強化するプロアクティブなプログラミングアシスタントです。コードの効率的な作成、クエリの最適化、エラーの自動修正、コマンドラインタスクの実行、ブラウザ自動化テストの実行をサポートします。",
+		"readmeLink": "README",
+		"llmProviderNeeded": "開始するには、少なくとも1つのLLMプロバイダーを設定する必要があります（必須）。",
+		"letsGo": "始めましょう！"
+	},
+	"chat": {
+		"welcome": {
+			"title": "何をお手伝いしましょうか？",
+			"description": "CoolClineは、高度なAI機能であなたの開発ワークフローを強化するプロアクティブなプログラミングアシスタントです。コードの効率的な作成、クエリの最適化、エラーの自動修正、コマンドラインタスクの実行、ブラウザ自動化テストの実行をサポートします。",
+			"readMore": "README"
+		},
+		"browser": {
+			"action": "ブラウザアクション",
+			"launch": "ブラウザを {url} で起動",
+			"click": "クリック ({coordinate})",
+			"type": "\"{text}\" を入力",
+			"scrollDown": "下にスクロール",
+			"scrollUp": "上にスクロール",
+			"close": "ブラウザを閉じる"
+		},
+		"task": {
+			"title": "タスク",
+			"seeMore": "もっと見る",
+			"seeLess": "表示を減らす",
+			"tokens": "Tokens",
+			"context": "コンテキスト",
+			"cache": "キャッシュ",
+			"apiCost": "APIコスト",
+			"export": "エクスポート"
+		},
+		"messages": {
+			"error": "エラー",
+			"trouble": "CoolClineに問題が発生しています...",
+			"executeCommand": "CoolClineはこのコマンドを実行しようとしています：",
+			"useTool": "ツールを使用",
+			"accessResource": "リソースにアクセス",
+			"taskCompleted": "タスク完了",
+			"apiCancelled": "APIリクエストがキャンセルされました",
+			"apiStreamingFailed": "APIストリーミングが失敗しました",
+			"apiRequest": "APIリクエスト",
+			"apiFailed": "APIリクエストが失敗しました",
+			"apiInProgress": "APIリクエスト中...",
+			"question": "CoolClineから質問があります：",
+			"searchDirectory": "CoolClineはこのディレクトリを検索しようとしています",
+			"searchedDirectory": "CoolClineはこのディレクトリを検索しました",
+			"switchMode": "CoolClineはモードを切り替えようとしています",
+			"switchedMode": "CoolClineはモードを切り替えました",
+			"modeBecause": "モードの理由：",
+			"mode": "モード",
+			"response": "応答",
+			"copyAsMarkdown": "Markdownとしてコピー",
+			"warning": "警告",
+			"taskIsRunningNote": "タスクが実行中です。以下の選択肢があります：",
+			"taskIsRunningSelect1": "1. 現在のタスクが完了するまで待機",
+			"taskIsRunningSelect2": "2. 現在のタスクをキャンセル"
+		},
+		"actions": {
+			"send": "送信",
+			"cancelTask": "タスクをキャンセル",
+			"await": "待機",
+			"edit": "編集...",
+			"separator": "────",
+			"newChat": "新規チャット",
+			"cancel": "キャンセル",
+			"retry": "再試行",
+			"startNewTask": "新しいタスクを開始",
+			"proceedAnyways": "とにかく続行",
+			"save": "保存",
+			"reject": "拒否",
+			"approve": "承認",
+			"runCommand": "コマンドを実行",
+			"proceedWhileRunning": "実行中に続行",
+			"resumeTask": "タスクを再開",
+			"terminate": "終了"
+		},
+		"announcement": {
+			"title": "🎉 CoolClineの紹介",
+			"customization": {
+				"title": "カスタムモード：新しいアイデンティティを祝して",
+				"description": "この新しい章を記念して、CoolClineをあなたが必要とするどんな役割にも形作る力を導入します！専門化されたペルソナと、深くカスタマイズされたプロンプトを持つエージェントチーム全体を作成できます：",
+				"examples": {
+					"qa": "徹底的なテストケースを作成しエッジケースを捕捉するQAエンジニア",
+					"pm": "ユーザーストーリーと機能の優先順位付けに長けたプロダクトマネージャー",
+					"ui": "美しくアクセシブルなインターフェースを作成するUI/UXデザイナー",
+					"reviewer": "品質と保守性を確保するコードレビュアー"
+				},
+				"getStarted": "ノートブックアイコンをクリックするだけでカスタムモードを始められます！"
+			},
+			"join": {
+				"title": "次の章に参加しましょう",
+				"description": "あなたがCoolClineの可能性をさらに広げることを楽しみにしています！カスタムモードを共有し、ディスカッションに参加してください："
+			}
+		},
+		"autoApprove": {
+			"title": "自動承認",
+			"none": "なし",
+			"description": "自動承認を使用すると、CoolClineは許可を求めずにアクションを実行できます。完全に信頼できるアクションに対してのみ有効にしてください。",
+			"actions": {
+				"readFiles": {
+					"label": "ファイルとディレクトリの読み取り",
+					"description": "コンピュータ上の任意のファイルへの読み取りアクセスを許可します。"
+				},
+				"editFiles": {
+					"label": "ファイルの編集",
+					"description": "コンピュータ上の任意のファイルの変更を許可します。"
+				},
+				"executeCommands": {
+					"label": "承認されたコマンドの実行",
+					"description": "承認された端末コマンドの実行を許可します。設定パネルで設定できます。"
+				},
+				"useBrowser": {
+					"label": "ブラウザの使用",
+					"description": "ヘッドレスブラウザで任意のウェブサイトの起動とインタラクションを許可します。"
+				},
+				"useMcp": {
+					"label": "MCPサーバーの使用",
+					"description": "ファイルシステムを変更したりAPIとやり取りしたりできる設定済みMCPサーバーの使用を許可します。"
+				},
+				"switchModes": {
+					"label": "モードの切り替えとタスクの作成",
+					"description": "承認なしで異なるAIモード間の自動切り替えと新しいタスクの作成を許可します。"
+				},
+				"retryRequests": {
+					"label": "失敗したリクエストの再試行",
+					"description": "プロバイダーがエラー応答を返した場合に失敗したAPIリクエストを自動的に再試行します。"
+				}
+			}
+		},
+		"contextMenu": {
+			"problems": "問題",
+			"pasteUrl": "URLを貼り付けてコンテンツを取得",
+			"noResults": "結果が見つかりません",
+			"gitCommits": "Gitコミット",
+			"addFile": "ファイルを追加",
+			"addFolder": "フォルダを追加"
+		},
+		"reasoning": {
+			"title": "推論"
+		},
+		"input": {
+			"typeMessage": "メッセージを入力...",
+			"typeTask": "タスクを入力...",
+			"addContext": "(@ でコンテキストを追加",
+			"switchMode": "，/ でモード切替",
+			"dragImages": "，Shift を押しながら画像をドラッグ"
+		}
+	},
+	"prompts": {
+		"settings": {
+			"sections": {
+				"general": "一般的なプロンプト設定",
+				"modes": "モードプロンプト設定",
+				"tools": "サポートプロンプト設定"
+			},
+			"language": {
+				"title": "言語設定",
+				"description": "LLM Provider の応答言語を設定します（インターフェースも選択した言語に切り替わります）",
+				"select": "言語を選択"
+			},
+			"customInstructions": {
+				"title": "通用 Prompt 指示",
+				"description": "これらの Prompt 指示はすべてのモードの基本的な動作ガイドラインとして適用され、以下の役割モード固有の指示で拡張できます",
+				"loadFrom": "指示は以下からも読み込めます",
+				"inWorkspace": "ファイルから通用 Prompt 指示を読み込む"
+			},
+			"modePrompts": {
+				"title": "Prompt 設定",
+				"description": "+ をクリックして新しいモードを作成するか、チャットで CoolCline に作成を依頼できます！",
+				"createMode": "新規役割モード作成",
+				"editConfig": "役割モード設定を編集",
+				"name": "名称",
+				"specificPrompts": "役割モード固有の Prompt",
+				"slug": {
+					"title": "識別子",
+					"description": "URLとファイル名で使用される一意の識別子（小文字、数字、ハイフンのみ使用可）"
+				},
+				"roleDefinition": {
+					"title": "役割定義",
+					"description": "このモードでのCoolClineの専門知識と性格特性を定義し、作業スタイルと動作を決定します",
+					"createDescription": "このモードの専門知識と性格特性を定義"
+				},
+				"apiConfig": {
+					"title": "LLM Provider 設定",
+					"description": "この役割モード用の LLM Provider 設定を選択します。例えば claude-3.5-sonnet や deepseek-r1 に対応する設定（設定ページで管理）",
+					"useCurrentConfig": "現在選択中の LLM Provider 設定を使用",
+					"enhancePrompts": "この補助機能用の特定の LLM Provider 設定を選択します。例えば claude-3.5-sonnet や deepseek-r1 に対応する設定（設定ページで管理）"
+				},
+				"tools": {
+					"title": "利用可能なツール",
+					"cannotModify": "ビルトインモードのツールは変更できません",
+					"selectTools": "このモードで使用できるツールを選択",
+					"availableTitle": "利用可能なツール一覧",
+					"selectDescription": "このモードで使用できるツールを選択"
+				},
+				"customInstructions": {
+					"title": "モード固有の指示",
+					"description": "{mode} モードの動作ガイドラインを追加",
+					"loadFrom": "{mode} モードの固有指示は以下からも読み込めます",
+					"inWorkspace": "ワークスペース内",
+					"createDescription": "このモードの動作ガイドラインを追加",
+					"modeSpecific": "モード固有の指示"
+				},
+				"preview": "システムプロンプトのプレビュー"
+			},
+			"api": {
+				"title": "API設定",
+				"configProfile": {
+					"title": "設定プロファイル",
+					"description": "チャット入力バーでプロバイダー間を素早く切り替えるためのAPIプロファイルを設定"
+				},
+				"model": {
+					"title": "モデル",
+					"search": "モデルを検索...",
+					"selected": "現在選択されているモデル："
+				},
+				"provider": {
+					"title": "プロバイダー",
+					"openai": "OpenAI",
+					"glama": "Glama",
+					"openRouter": "OpenRouter"
+				}
+			},
+			"experimental": {
+				"title": "実験的機能",
+				"description": "実験的機能の有効化または無効化"
+			}
+		},
+		"support": {
+			"title": "サポートプロンプト設定",
+			"enhance": {
+				"title": "拡張",
+				"testPrompt": "拡張をテストするプロンプトを入力",
+				"preview": "プロンプト拡張のプレビュー",
+				"enterPrompt": "拡張をテストするプロンプトを入力"
+			},
+			"prompts": {
+				"enhance": {
+					"label": "プロンプト拡張",
+					"description": "プロンプト拡張を通じてより正確な提案と改善を得られます。これにより、CoolClineがあなたの意図を正確に理解し、最適な応答を提供することが保証されます。チャットインターフェースの ✨ アイコンから利用できます。"
+				},
+				"explain": {
+					"label": "コード説明",
+					"description": "コードスニペット、関数、またはファイル全体の詳細な説明を取得します。複雑なコードの理解や新しいプログラミングパターンの学習に適しています。エディタのスマート提案（電球アイコン）または右クリックメニューから利用できます。"
+				},
+				"fix": {
+					"label": "問題修正",
+					"description": "プログラムのエラー、バグ、コード品質の問題を特定し解決するのを支援し、段階的な修正ガイダンスを提供します。エディタのスマート提案（電球アイコン）または右クリックメニューから利用できます。"
+				},
+				"improve": {
+					"label": "コード最適化",
+					"description": "機能を維持しながら、コードの最適化提案、ベストプラクティス、アーキテクチャの改善を提供します。エディタのスマート提案（電球アイコン）または右クリックメニューから利用できます。"
+				},
+				"addToContext": {
+					"label": "コンテキスト追加",
+					"description": "現在のタスクや会話に補足情報を追加します。追加の説明や詳細を明確にするために使用されます。エディタのスマート提案（電球アイコン）または右クリックメニューから利用できます。"
+				},
+				"terminalAddToContext": {
+					"label": "ターミナル内容をコンテキストに追加",
+					"description": "ターミナル出力を現在のタスクや会話に追加します。コマンド出力やログの提供に便利です。ターミナルのコンテキストメニュー（選択したターミナル内容を右クリック）から利用できます。"
+				},
+				"terminalFix": {
+					"label": "ターミナルコマンドを修正",
+					"description": "失敗したコマンドや改善が必要なコマンドの修正を支援します。ターミナルのコンテキストメニュー（選択したターミナル内容を右クリック）から利用できます。"
+				},
+				"terminalExplain": {
+					"label": "ターミナルコマンドを説明",
+					"description": "ターミナルコマンドとその出力の詳細な説明を提供します。ターミナルのコンテキストメニュー（選択したターミナル内容を右クリック）から利用できます。"
+				}
+			}
+		}
+	},
+	"mcp": {
+		"title": "MCPサーバー",
+		"modelContextProtocol": "モデルコンテキストプロトコル",
+		"description": {
+			"part1": "CoolClineの機能を拡張する追加ツールとリソースを提供するローカルMCPサーバーとの通信を有効にします。",
+			"part2": "または、CoolClineにワークフロー用の新しいツールの作成を依頼できます（例：「最新のnpmドキュメントを取得するツールを作成」）。"
+		},
+		"communityServers": "コミュニティサーバー",
+		"enable": {
+			"title": "MCPサーバーを有効化",
+			"description": "有効にすると、CoolClineは特別な機能のためにMCPサーバーと通信できます。MCPを使用しない場合は、CoolClineのトークン使用量を減らすためにこれを無効にできます。"
+		},
+		"serverCreation": {
+			"title": "MCPサーバー作成を有効化",
+			"description": "有効にすると、CoolClineは「ツールを作成...」などのコマンドで新しいMCPサーバーの作成を支援できます。MCPサーバーを作成する必要がない場合は、CoolClineのトークン使用量を減らすためにこれを無効にできます。"
+		},
+		"editSettings": "MCP設定を編集",
+		"tools": {
+			"title": "ツール",
+			"parameters": "パラメータ",
+			"alwaysAllow": "常に許可",
+			"noTools": "ツールが見つかりません"
+		},
+		"resources": {
+			"title": "リソース",
+			"returns": "戻り値",
+			"noResources": "リソースが見つかりません"
+		},
+		"timeout": {
+			"15": "15秒",
+			"30": "30秒",
+			"60": "1分",
+			"300": "5分",
+			"600": "10分",
+			"900": "15分",
+			"1800": "30分",
+			"3600": "60分",
+			"title": "ネットワークタイムアウト",
+			"description": "サーバー応答の最大待機時間"
+		},
+		"server": {
+			"restart": "サーバーを再起動",
+			"restarting": "再起動中...",
+			"retry": "接続を再試行",
+			"retrying": "再試行中..."
+		}
+	},
+	"history": {
+		"title": "履歴",
+		"search": {
+			"placeholder": "履歴を検索...",
+			"clear": "検索をクリア"
+		},
+		"sort": {
+			"newest": "最新順",
+			"oldest": "古い順",
+			"mostExpensive": "コスト高順",
+			"mostTokens": "トークン多順",
+			"mostRelevant": "関連度順"
+		},
+		"preview": {
+			"recentTasks": "最近のタスク",
+			"viewAll": "すべての履歴を表示",
+			"promptCopied": "コピー完了",
+			"copyPrompt": "コピー完了",
+			"metrics": {
+				"tokens": "Tokens",
+				"cache": "キャッシュ",
+				"apiCost": "APIコスト"
+			}
+		}
+	},
+	"settings": {
+		"title": "設定",
+		"done": "完了",
+		"provider": {
+			"title": "LLM Provider 設定",
+			"llmProvider": "LLM Provider",
+			"apiKey": {
+				"title": "API Key",
+				"placeholder": "LLM Provider の API Key を入力",
+				"storedLocally": "LLM Provider の API Key はローカルマシンに安全に保存されます",
+				"getKey": "LLM Provider の API Key を取得"
+			},
+			"customBaseUrl": {
+				"title": "カスタム Base URL",
+				"placeholder": "デフォルト: {{defaultUrl}}"
+			},
+			"configProfile": {
+				"title": "LLM Provider クイック切り替え設定",
+				"description": "ここでは、複数の LLM Provider オプションを作成・管理できます。同じ LLM Provider の異なるモデル用に個別のオプションを作成でき、各オプションには LLM Provider の完全な設定情報が保存されます。作成後、チャット入力バーの下部でリアルタイムに設定を切り替えることができます。 設定情報には以下が含まれます： LLM Provider、 API Key、 Model、 その他の LLM Provider 関連設定。 LLM Provider オプションの作成手順（手順4は2と3の順序を入れ替え可能）： 1. + ボタンをクリックすると、現在の設定情報から自動的にオプションがコピーされ、名前は xx (copy) となります。 2. ✏️ アイコンをクリックしてオプション名を変更。 3. ☑️ をクリックしてオプション名を保存。 4. 必要に応じて Model などの主要パラメータを調整（編集ボックスがフォーカスを失うと自動保存）。 オプション名の命名規則： 「プロバイダー-モデルバージョン-特徴」構造を推奨。例： openrouter-deepseek-v3-free； openrouter-deepseek-r1-free； deepseek-v3-公式； deepseek-r1-公式。"
+			},
+			"providers": {
+				"anthropic": {
+					"name": "Anthropic",
+					"title": "Anthropic API Key",
+					"baseUrl": "Base URL (オプション)",
+					"enterBaseUrl": "API Base URL を入力",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"getKey": "Anthropic API Key はこちらで取得できます"
+				},
+				"openai": {
+					"name": "OpenAI 互換",
+					"title": "OpenAI 互換サービス",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Base URL を入力",
+					"useAzure": "Azure OpenAI を使用",
+					"setAzureVersion": "Azure API バージョンを設定",
+					"description": "OpenAI 互換 API サービスを使用",
+					"streaming": "ストリーミングを有効化",
+					"modelConfig": {
+						"title": "モデル設定",
+						"description": "モデルの機能と価格情報を設定",
+						"capabilities": {
+							"title": "モデル機能",
+							"description": "カスタム OpenAI 互換モデルの機能と価格を設定",
+							"warning": "モデルの機能は CoolCline の動作に影響を与えるため、慎重に設定してください",
+							"maxTokens": {
+								"title": "最大出力トークン数",
+								"description": "モデルが1回のレスポンスで生成できる最大トークン数",
+								"note": "(-1 はサーバーに依存)"
+							},
+							"contextWindow": {
+								"title": "コンテキストウィンドウサイズ",
+								"description": "モデルが処理できる総トークン数（入力 + 出力）。CoolCline Code の正常な動作を支援します"
+							}
+						},
+						"features": {
+							"title": "モデル機能",
+							"imageSupport": {
+								"title": "画像サポート",
+								"description": "モデルが入力内の画像を処理・理解できる場合に有効化。画像ベースの支援と視覚的コード理解に必要です",
+								"note": "モデルが画像を分析・理解し、視覚的コード支援に不可欠です"
+							},
+							"computerUse": {
+								"title": "コンピュータ使用",
+								"description": "モデルがコマンドとファイル操作でコンピュータと対話できる場合に有効化。自動化タスクとファイル修正に必要です",
+								"note": "この機能は sonnet 3.5 のようなコンピュータ使用をサポートします"
+							}
+						},
+						"pricing": {
+							"title": "モデル価格",
+							"description": "100万トークンあたりのUSD価格を設定",
+							"inputPrice": {
+								"title": "入力価格",
+								"description": "入力/プロンプトの100万トークンあたりのコスト。コンテキストと指示をモデルに送信するコストに影響します"
+							},
+							"outputPrice": {
+								"title": "出力価格",
+								"description": "モデルレスポンスの100万トークンあたりのコスト。生成コンテンツと補完のコストに影響します"
+							}
+						}
+					}
+				},
+				"openaiNative": {
+					"name": "OpenAI Native",
+					"title": "OpenAI APIキー",
+					"description": "公式OpenAI APIサービスを使用",
+					"useCustomBaseUrl": "カスタムベースURLを使用",
+					"getKey": "OpenAI APIキーはこちらで取得できます"
+				},
+				"glama": {
+					"name": "Glama",
+					"title": "Glama APIキー",
+					"useCustomBaseUrl": "カスタムベースURLを使用",
+					"getKey": "Glama APIキーを取得"
+				},
+				"bedrock": {
+					"name": "AWS Bedrock",
+					"title": "AWS Bedrock",
+					"credentials": "AWS認証情報",
+					"profile": "AWSプロファイル",
+					"accessKey": "アクセスキーID",
+					"secretKey": "シークレットキー",
+					"sessionToken": "セッショントークン（オプション）",
+					"region": "リージョン",
+					"selectRegion": "リージョンを選択",
+					"useCrossRegion": "クロスリージョン推論を使用",
+					"description": "AWS Bedrock AIモデルサービスを使用",
+					"useCustomBaseUrl": "カスタムベースURLを使用",
+					"getKey": "AWS認証情報を設定"
+				},
+				"openRouter": {
+					"name": "OpenRouter",
+					"title": "OpenRouter APIキー",
+					"getKey": "OpenRouter APIキーを取得",
+					"compressPrompts": "プロンプトとメッセージチェーンをコンテキストサイズに圧縮",
+					"transforms": "OpenRouterトランスフォーム",
+					"useCustomBaseUrl": "カスタムベースURLを使用"
+				},
+				"vertex": {
+					"name": "Google Vertex AI",
+					"title": "Google Vertex AI",
+					"projectId": "Google Cloudプロジェクトid",
+					"enterProjectId": "プロジェクトIDを入力",
+					"region": "Google Cloudリージョン",
+					"selectRegion": "リージョンを選択",
+					"description": "Google Cloud Vertex AIを使用するには、1) Google Cloudアカウントを作成 › Vertex AI APIを有効化 › 必要なClaudeモデルを有効化、2) Google Cloud CLIをインストール › デフォルトアプリケーション認証情報を設定 が必要です",
+					"useCustomBaseUrl": "カスタムベースURLを使用",
+					"getKey": "Google Cloud認証情報を設定"
+				},
+				"mistral": {
+					"name": "Mistral",
+					"title": "Mistral API Key",
+					"description": "Mistral AI モデルサービスを使用",
+					"getKey": "Mistral API Key はこちらで取得できます",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"placeholder": "API Key を入力..."
+				},
+				"gemini": {
+					"name": "Gemini",
+					"title": "Gemini API Key",
+					"description": "Google の Gemini AI モデルを使用",
+					"getKey": "Gemini API Key を取得",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"placeholder": "API Key を入力..."
+				},
+				"ollama": {
+					"name": "Ollama",
+					"title": "Ollama",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Base URL を入力",
+					"modelId": "モデル ID",
+					"enterModelId": "例：meta-llama-3.1-8b-instruct",
+					"description": "Ollama を使用すると、オープンソースの言語モデルをローカルで実行できます",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"getKey": "Ollama API Key を取得",
+					"quickstartGuide": "クイックスタートガイド",
+					"localServer": "ローカルサーバー"
+				},
+				"lmstudio": {
+					"name": "LM Studio",
+					"title": "LM Studio",
+					"baseUrl": "Base URL (オプション)",
+					"modelId": "モデル ID",
+					"enterModelId": "例：meta-llama-3.1-8b-instruct",
+					"description": "LM Studio を使用すると、ローカルコンピュータでモデルを実行できます。使い方については、クイックスタートガイドを参照してください。また、この拡張機能と一緒に使用するには、LM Studio のローカルサーバー機能を起動する必要があります。",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"getKey": "LM Studio を設定",
+					"quickstartGuide": "クイックスタートガイド",
+					"localServer": "ローカルサーバー"
+				},
+				"vscode": {
+					"name": "GitHub Copilot LLM API",
+					"title": "VS Code LM API",
+					"description": "VS Code 内蔵の言語モデル API を使用",
+					"modelSelector": "言語モデル",
+					"selectModel": "モデルを選択...",
+					"noModels": "VS Code LM APIがサポートするモデルの取得に失敗しました！注意：このメッセージが表示された場合、操作が完了していないことを意味します。指示に従って操作を完了してください。CoolClineがモデルにアクセスできるようになる前に、VS Code拡張機能マーケットプレイスでGitHub Copilotを検索、インストール、ログインする必要があります。ログインしたアカウントがこれらを管理するため、APIキーの設定は必要ありません。",
+					"experimentalNote": "注意：この機能は不安定な可能性があります。異常が発生した場合は、CoolClineにissueを提出してフィードバックしてください。",
+					"useCustomBaseUrl": "カスタム Base URL を使用"
+				},
+				"unbound": {
+					"name": "Unbound",
+					"title": "Unbound API Key",
+					"getKey": "Unbound API Key を取得",
+					"useCustomBaseUrl": "カスタム Base URL を使用"
+				},
+				"deepseek": {
+					"name": "DeepSeek",
+					"title": "DeepSeek API Key",
+					"description": "DeepSeek の高性能 AI モデルサービスを使用",
+					"getKey": "DeepSeek API Key はこちらで取得できます",
+					"useCustomBaseUrl": "カスタム Base URL を使用",
+					"placeholder": "API Key を入力..."
+				}
+			},
+			"model": {
+				"title": "モデル",
+				"selectPlaceholder": "モデルを選択...",
+				"currentlySelected": "現在選択されているモデル：",
+				"search": "モデルを検索..."
+			},
+			"common": {
+				"modelCapabilityNote": "注意：CoolClineは複雑なプロンプトを使用し、Claudeモデルと最も相性が良いです。機能が制限されたモデルは予期通りに動作しない可能性があります。"
+			},
+			"temperature": {
+				"title": "Use Custom Temperature",
+				"description": "Controls the randomness of the model's responses. Higher values make the output more random, while lower values make it more deterministic."
+			}
+		},
+		"autoApprove": {
+			"title": "自動承認設定",
+			"description": "これらの設定により、CoolClineは承認なしでアクションを実行できます。AIを完全に信頼し、セキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
+			"readOnly": {
+				"title": "読み取り専用アクションを常に承認",
+				"description": "有効にすると、CoolClineは承認ボタンをクリックせずにディレクトリの内容を表示し、ファイルを読み取ることができます。"
+			},
+			"write": {
+				"title": "書き込みアクションを常に承認",
+				"description": "承認なしで自動的にファイルを作成および編集",
+				"delay": {
+					"title": "書き込み遅延",
+					"description": "潜在的な問題を診断するための書き込み後の遅延"
+				}
+			},
+			"browser": {
+				"title": "ブラウザアクションを常に承認",
+				"description": "承認なしで自動的にブラウザアクションを実行 注意：モデルがコンピュータの使用をサポートしている場合にのみ適用されます"
+			},
+			"retry": {
+				"title": "失敗したAPIリクエストを常に再試行",
+				"description": "サーバーがエラーを返した場合に失敗したAPIリクエストを自動的に再試行",
+				"delay": {
+					"title": "再試行遅延",
+					"description": "リクエストを再試行する前の遅延"
+				}
+			},
+			"mcp": {
+				"title": "MCPツールを常に承認",
+				"description": "MCPサーバービューで個々のMCPツールの自動承認を有効化（この設定と個々のツールの「常に許可」チェックボックスの両方が必要）"
+			},
+			"modeSwitch": {
+				"title": "モード切り替えとタスク作成を常に承認",
+				"description": "承認なしで自動的にAIモード間を切り替え、新しいタスクを作成"
+			},
+			"execute": {
+				"title": "許可された実行アクションを常に承認",
+				"description": "承認なしで自動的に許可された端末コマンドを実行",
+				"commands": {
+					"title": "自動実行を許可するコマンド",
+					"description": "「許可された実行アクションを常に承認」が有効な場合に自動実行できるコマンドプレフィックス。",
+					"placeholder": "コマンドプレフィックスを入力（例：'git '）",
+					"add": "追加"
+				}
+			}
+		},
+		"browser": {
+			"title": "ブラウザ設定",
+			"viewport": {
+				"title": "ウィンドウサイズ",
+				"description": "ブラウザインタラクションのウィンドウサイズを選択します。これはウェブサイトの表示方法とインタラクション方法に影響します。",
+				"options": {
+					"largeDesktop": "大きなデスクトップ (1280x800)",
+					"smallDesktop": "小さなデスクトップ (900x600)",
+					"tablet": "タブレット (768x1024)",
+					"mobile": "モバイル (360x640)"
+				}
+			},
+			"screenshot": {
+				"title": "スクリーンショット品質",
+				"description": "ブラウザスクリーンショットのWebP品質を調整します。高い値はより鮮明なスクリーンショットを提供しますが、トークン使用量が増加します。"
+			}
+		},
+		"notification": {
+			"title": "通知設定",
+			"sound": {
+				"title": "サウンドを有効化",
+				"description": "有効にすると、CoolClineは通知とイベントのサウンドを再生します。",
+				"volume": "音量"
+			}
+		},
+		"advanced": {
+			"title": "詳細設定",
+			"experimental": {
+				"warning": "⚠️",
+				"features": {
+					"diffStrategy": {
+						"name": "実験的なdiff戦略を使用",
+						"description": "有効にすると、CoolClineはより複雑なコード変更を処理できる高度なdiff戦略を使用します。これはまだ実験的で、すべてのケースで機能しない場合があります。"
+					}
+				}
+			},
+			"rateLimit": {
+				"title": "レート制限",
+				"description": "APIリクエスト間の最小間隔。"
+			},
+			"terminalOutput": {
+				"title": "端末出力制限",
+				"description": "コマンド実行時に端末出力に含める最大行数。超過した場合、トークンを節約するために中間の行が削除されます。"
+			},
+			"diff": {
+				"title": "diff編集を有効化",
+				"description": "有効にすると、CoolClineはファイルをより速く編集し、フィルタリングされていない完全なファイル書き込みを自動的に拒否できます。最新のClaude 3.5 Sonnetモデルで最もよく機能します。",
+				"matchPrecision": {
+					"title": "一致精度",
+					"description": "このスライダーは、diffを適用する際のコード断片の一致精度を制御します。低い値はより柔軟な一致を許可しますが、誤置換のリスクが増加します。100%未満の値は注意して使用してください。"
+				}
+			},
+			"checkpoints": {
+				"title": "Git スナップショット管理",
+				"enable": "チェックポイントを有効にする",
+				"description": "有効にすると、CoolClineはAIがファイル変更操作（ファイルの書き込み、差分の適用、コンテンツの挿入など）を実行した後、自動的にGitスナップショットを作成します。コードの状態の保存、復元、比較をサポートします。",
+				"features": {
+					"save": "コードスナップショットの自動保存",
+					"diff": "スナップショット比較のサポート",
+					"restore": "コード状態の復元サポート",
+					"integration": "Gitバージョン管理との完全な統合"
+				}
+			}
+		},
+		"experiments": {
+			"title": "実験的機能",
+			"description": "開発中の機能を有効化または無効化",
+			"features": {
+				"DIFF_STRATEGY": {
+					"name": "実験的な統合diff戦略を使用",
+					"description": "実験的な統合diff戦略を有効にします。この戦略はモデルエラーによる再試行回数を減らすことができますが、予期しない動作や誤った編集につながる可能性があります。リスクを理解し、すべての変更を慎重にレビューする準備ができている場合にのみ有効にしてください。"
+				},
+				"SEARCH_AND_REPLACE": {
+					"name": "実験的な検索と置換ツールを使用",
+					"description": "CoolClineが単一のリクエストで検索語の複数のインスタンスを置換できる実験的な検索と置換ツールを有効にします。"
+				},
+				"INSERT_BLOCK": {
+					"name": "実験的なブロック挿入ツールを使用",
+					"description": "CoolClineがdiffを作成せずに特定の行番号にコンテンツを挿入できる実験的なブロック挿入ツールを有効にします。"
+				}
+			}
+		},
+		"footer": {
+			"description": "質問やフィードバックがある場合は、こちらでissueを開いてください",
+			"resetState": "状態をリセット",
+			"resetStateDescription": "これにより、拡張機能のすべてのグローバル状態とシークレットストレージがリセットされます。"
+		}
+	}
+}

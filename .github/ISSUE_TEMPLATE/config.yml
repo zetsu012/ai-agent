@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: Feature Request
+      url: https://github.com/CoolCline/CoolCline/discussions/categories/feature-requests
+      about: Share and vote on feature requests for CoolCline
+    - name: Leave a Review
+      url: https://marketplace.visualstudio.com/items?itemName=CoolCline.coolcline&ssr=false#review-details
+      about: Enjoying CoolCline? Leave a review here!

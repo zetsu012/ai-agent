@@ -1,0 +1,725 @@
+{
+	"common": {
+		"done": "Hotovo",
+		"add": "Přidat",
+		"delete": "Smazat",
+		"rename": "Přejmenovat",
+		"preview": "Náhled",
+		"save": "Uložit",
+		"cancel": "Zrušit",
+		"create": "Vytvořit",
+		"prompt": "Prompt",
+		"validation": {
+			"provideApiKey": "Musíte zadat platný API Key pro aktuální LLM Provider nebo vybrat jiný LLM Provider s nakonfigurovaným API Key.",
+			"provideRegion": "Musíte zvolit region pro použití s AWS Bedrock.",
+			"provideProjectAndRegion": "Musíte zadat platné ID projektu a region Google Cloud.",
+			"provideBaseUrlAndKey": "Musíte zadat platnou Base URL, API Key a ID modelu.",
+			"provideModelId": "Musíte zadat platné ID modelu.",
+			"provideModelSelector": "Musíte zadat platný selektor modelu.",
+			"modelNotAvailable": "Zadané ID modelu není k dispozici. Prosím, vyberte jiný model."
+		},
+		"actions": {
+			"reset": "Obnovit výchozí",
+			"edit": "Upravit",
+			"save": "Uložit",
+			"cancel": "Zrušit",
+			"close": "Zavřít",
+			"doneEditing": "Dokončit úpravy"
+		},
+		"status": {
+			"loading": "Načítání...",
+			"error": "Chyba",
+			"success": "Úspěch"
+		},
+		"noDescription": "Bez popisu",
+		"unknown": "Neznámý"
+	},
+	"welcome": {
+		"title": "Co je CoolCline?",
+		"description": "CoolCline je proaktivní programovací asistent, který vylepšuje váš vývojový workflow pomocí pokročilých AI schopností. Pomáhá vám efektivněji psát kód, optimalizovat dotazy, automaticky opravovat chyby, spouštět příkazy v příkazové řádce a provádět automatizované testy prohlížeče.",
+		"readmeLink": "README",
+		"llmProviderNeeded": "Pro začátek toto rozšíření vyžaduje alespoň jednoho nakonfigurovaného LLM poskytovatele (povinné).",
+		"letsGo": "Pojďme na to!"
+	},
+	"chat": {
+		"welcome": {
+			"title": "Co pro vás mohu udělat?",
+			"description": "CoolCline je proaktivní programovací asistent, který vylepšuje váš vývojový workflow pomocí pokročilých AI schopností. Pomáhá vám efektivněji psát kód, optimalizovat dotazy, automaticky opravovat chyby, spouštět příkazy v příkazové řádce a provádět automatizované testy prohlížeče.",
+			"readMore": "README"
+		},
+		"browser": {
+			"action": "Akce prohlížeče",
+			"launch": "Spustit prohlížeč na {url}",
+			"click": "Kliknout ({coordinate})",
+			"type": "Napsat \"{text}\"",
+			"scrollDown": "Posunout dolů",
+			"scrollUp": "Posunout nahoru",
+			"close": "Zavřít prohlížeč"
+		},
+		"task": {
+			"title": "Úkol",
+			"seeMore": "Zobrazit více",
+			"seeLess": "Zobrazit méně",
+			"tokens": "Tokens",
+			"context": "Kontext",
+			"cache": "Mezipaměť",
+			"apiCost": "Náklady API",
+			"export": "EXPORT"
+		},
+		"messages": {
+			"error": "Chyba",
+			"trouble": "CoolCline má potíže...",
+			"executeCommand": "CoolCline chce spustit tento příkaz:",
+			"useTool": "použít nástroj",
+			"accessResource": "přístup ke zdroji",
+			"taskCompleted": "Úkol dokončen",
+			"apiCancelled": "API požadavek zrušen",
+			"apiStreamingFailed": "Streamování API selhalo",
+			"apiRequest": "API požadavek",
+			"apiFailed": "API požadavek selhal",
+			"apiInProgress": "API požadavek...",
+			"question": "CoolCline má otázku:",
+			"searchDirectory": "CoolCline chce prohledat tento adresář",
+			"searchedDirectory": "CoolCline prohledal tento adresář",
+			"switchMode": "CoolCline chce přepnout do",
+			"switchedMode": "CoolCline přepnul do",
+			"modeBecause": "režimu protože:",
+			"mode": "režim",
+			"response": "Odpověď",
+			"copyAsMarkdown": "Kopírovat jako Markdown",
+			"warning": "Varování",
+			"taskIsRunningNote": "Aktuálně běží úloha. Můžete:",
+			"taskIsRunningSelect1": "1. Počkat na dokončení aktuální úlohy",
+			"taskIsRunningSelect2": "2. Zrušit aktuální úlohu"
+		},
+		"actions": {
+			"send": "Odeslat",
+			"cancelTask": "Zrušit úlohu",
+			"await": "Čekat",
+			"edit": "Upravit...",
+			"separator": "────",
+			"newChat": "Nový chat",
+			"cancel": "Zrušit",
+			"retry": "Opakovat",
+			"startNewTask": "Začít nový úkol",
+			"proceedAnyways": "Pokračovat přesto",
+			"save": "Uložit",
+			"reject": "Odmítnout",
+			"approve": "Schválit",
+			"runCommand": "Spustit příkaz",
+			"proceedWhileRunning": "Pokračovat během běhu",
+			"resumeTask": "Obnovit úkol",
+			"terminate": "Ukončit"
+		},
+		"announcement": {
+			"title": "🎉 Představujeme CoolCline",
+			"customization": {
+				"title": "Vlastní režimy: Oslavujeme naši novou identitu",
+				"description": "Pro označení této nové kapitoly představujeme možnost formovat CoolCline do jakékoli role, kterou potřebujete! Vytvářejte specializované persony a vytvořte celý tým agentů s hluboce přizpůsobenými prompty:",
+				"examples": {
+					"qa": "QA inženýři, kteří píší důkladné testovací případy a odhalují hraniční případy",
+					"pm": "Produktoví manažeři, kteří vynikají v uživatelských příbězích a prioritizaci funkcí",
+					"ui": "UI/UX designéři, kteří vytvářejí krásná a přístupná rozhraní",
+					"reviewer": "Recenzenti kódu, kteří zajišťují kvalitu a udržovatelnost"
+				},
+				"getStarted": "Stačí kliknout na ikonu poznámkového bloku a začít s Vlastními režimy!"
+			},
+			"join": {
+				"title": "Připojte se k nám pro další kapitolu",
+				"description": "Nemůžeme se dočkat, až uvidíme, jak posunete potenciál CoolCline ještě dál! Sdílejte své vlastní režimy a připojte se k diskuzi na"
+			}
+		},
+		"autoApprove": {
+			"title": "Automatické schválení",
+			"none": "Žádné",
+			"description": "Automatické schválení umožňuje CoolCline provádět akce bez žádosti o povolení. Povolte pouze pro akce, kterým plně důvěřujete.",
+			"actions": {
+				"readFiles": {
+					"label": "Číst soubory a adresáře",
+					"description": "Umožňuje přístup ke čtení jakéhokoli souboru na vašem počítači."
+				},
+				"editFiles": {
+					"label": "Upravovat soubory",
+					"description": "Umožňuje úpravu jakéhokoli souboru na vašem počítači."
+				},
+				"executeCommands": {
+					"label": "Spouštět schválené příkazy",
+					"description": "Umožňuje spouštění schválených příkazů terminálu. Můžete to nakonfigurovat v panelu nastavení."
+				},
+				"useBrowser": {
+					"label": "Používat prohlížeč",
+					"description": "Umožňuje spouštět a interagovat s jakýmkoli webem v headless prohlížeči."
+				},
+				"useMcp": {
+					"label": "Používat MCP servery",
+					"description": "Umožňuje použití nakonfigurovaných MCP serverů, které mohou upravovat souborový systém nebo interagovat s API."
+				},
+				"switchModes": {
+					"label": "Přepínat režimy a vytvářet úkoly",
+					"description": "Umožňuje automatické přepínání mezi různými AI režimy a vytváření nových úkolů bez nutnosti schválení."
+				},
+				"retryRequests": {
+					"label": "Opakovat neúspěšné požadavky",
+					"description": "Automaticky opakuje neúspěšné API požadavky, když poskytovatel vrátí chybovou odpověď."
+				}
+			}
+		},
+		"contextMenu": {
+			"problems": "Problémy",
+			"pasteUrl": "Vložit URL pro načtení obsahu",
+			"noResults": "Žádné výsledky nenalezeny",
+			"gitCommits": "Git commity",
+			"addFile": "Přidat soubor",
+			"addFolder": "Přidat složku"
+		},
+		"reasoning": {
+			"title": "Uvažování"
+		},
+		"input": {
+			"typeMessage": "Napište zprávu...",
+			"typeTask": "Napište svůj úkol zde...",
+			"addContext": "(@ pro přidání kontextu",
+			"switchMode": ", / pro změnu režimu",
+			"dragImages": ", podržte Shift pro přetažení obrázků"
+		}
+	},
+	"prompts": {
+		"settings": {
+			"sections": {
+				"general": "Obecná nastavení promptů",
+				"modes": "Nastavení promptů režimů",
+				"tools": "Nastavení promptů podpory"
+			},
+			"language": {
+				"title": "Nastavení jazyka",
+				"description": "Nastavte jazyk odpovědí LLM Provider (rozhraní se také přepne do vybraného jazyka)",
+				"select": "Vybrat jazyk"
+			},
+			"customInstructions": {
+				"title": "Obecné Prompt instrukce",
+				"description": "Tyto Prompt instrukce se vztahují na všechny režimy jako základní pokyny chování. Můžete je rozšířit pomocí pokynů specifických pro režim níže",
+				"loadFrom": "Pokyny lze také načíst z",
+				"inWorkspace": "souboru načíst obecné Prompt instrukce"
+			},
+			"modePrompts": {
+				"title": "Nastavení promptů",
+				"description": "Klikněte na + pro vytvoření nového režimu, nebo prostě požádejte CoolCline v chatu, aby ho pro vás vytvořil!",
+				"createMode": "Nový režim role",
+				"editConfig": "Upravit konfiguraci režimu role",
+				"name": "Název",
+				"specificPrompts": "Prompt specifický pro režim role",
+				"slug": {
+					"title": "Identifikátor",
+					"description": "Jedinečný identifikátor používaný v URL a názvech souborů, měl by obsahovat pouze malá písmena, čísla a pomlčky"
+				},
+				"roleDefinition": {
+					"title": "Definice role",
+					"description": "Definujte odbornost a osobnostní rysy CoolCline pro tento režim, které určí jeho pracovní styl a chování",
+					"createDescription": "Definujte odbornost a osobnostní rysy pro tento režim"
+				},
+				"apiConfig": {
+					"title": "Konfigurace LLM Provider",
+					"description": "Vyberte konfiguraci LLM Provider pro tento režim role, například možnosti odpovídající claude-3.5-sonnet nebo deepseek-r1 (možnosti jsou spravovány na stránce nastavení)",
+					"useCurrentConfig": "Použít aktuálně vybranou konfiguraci LLM Provider",
+					"enhancePrompts": "Pro tuto pomocnou funkci vyberte konkrétní konfiguraci LLM Provider, například možnosti odpovídající claude-3.5-sonnet nebo deepseek-r1 (možnosti jsou spravovány na stránce nastavení)"
+				},
+				"tools": {
+					"title": "Dostupné nástroje",
+					"cannotModify": "Nástroje pro vestavěné režimy nelze upravovat",
+					"selectTools": "Vyberte, které nástroje může tento režim používat",
+					"availableTitle": "Seznam dostupných nástrojů",
+					"selectDescription": "Vyberte, které nástroje může tento režim používat"
+				},
+				"customInstructions": {
+					"title": "Pokyny specifické pro režim",
+					"description": "Přidejte pokyny chování specifické pro režim {mode}",
+					"loadFrom": "Pokyny specifické pro režim {mode} lze také načíst z",
+					"inWorkspace": "ve vašem pracovním prostoru",
+					"createDescription": "Přidejte pokyny chování specifické pro tento režim",
+					"modeSpecific": "Pokyny specifické pro režim"
+				},
+				"preview": "Náhled systémového promptu"
+			},
+			"api": {
+				"title": "Nastavení API",
+				"configProfile": {
+					"title": "Konfigurační profily",
+					"description": "Nakonfigurujte profily API pro rychlé přepínání mezi poskytovateli v panelu zadávání chatu"
+				},
+				"model": {
+					"title": "Model",
+					"search": "Hledat modely...",
+					"selected": "Aktuálně vybraný model:"
+				},
+				"provider": {
+					"title": "Poskytovatel",
+					"openai": "OpenAI",
+					"glama": "Glama",
+					"openRouter": "OpenRouter"
+				}
+			},
+			"experimental": {
+				"title": "Experimentální funkce",
+				"description": "Povolit nebo zakázat experimentální funkce"
+			}
+		},
+		"support": {
+			"title": "Nastavení promptů podpory",
+			"enhance": {
+				"title": "Vylepšit",
+				"testPrompt": "Zadejte prompt pro testování vylepšení",
+				"preview": "Náhled vylepšení promptu",
+				"enterPrompt": "Zadejte prompt pro testování vylepšení"
+			},
+			"prompts": {
+				"enhance": {
+					"label": "Vylepšení promptu",
+					"description": "Získejte přesnější návrhy a vylepšení prostřednictvím vylepšení promptu. To zajišťuje, že CoolCline přesně porozumí vašemu záměru a poskytne nejlepší odpověď. Dostupné přes ikonu ✨ v rozhraní chatu."
+				},
+				"explain": {
+					"label": "Vysvětlení kódu",
+					"description": "Získejte podrobná vysvětlení úryvků kódu, funkcí nebo celých souborů. Vhodné pro pochopení komplexního kódu nebo učení se novým programovacím vzorům. Dostupné přes chytré návrhy (ikona žárovky) nebo kontextové menu v editoru."
+				},
+				"fix": {
+					"label": "Oprava problémů",
+					"description": "Pomáhá identifikovat a řešit programové chyby, bugy nebo problémy s kvalitou kódu, poskytuje podrobný návod k opravě. Dostupné přes chytré návrhy (ikona žárovky) nebo kontextové menu v editoru."
+				},
+				"improve": {
+					"label": "Optimalizace kódu",
+					"description": "Získejte návrhy na optimalizaci kódu, osvědčené postupy a architektonická vylepšení při zachování funkčnosti. Dostupné přes chytré návrhy (ikona žárovky) nebo kontextové menu v editoru."
+				},
+				"addToContext": {
+					"label": "Přidat kontext",
+					"description": "Přidejte doplňující informace k aktuálnímu úkolu nebo konverzaci. Používá se pro poskytnutí dodatečných vysvětlení nebo upřesňujících detailů. Dostupné přes chytré návrhy (ikona žárovky) nebo kontextové menu v editoru."
+				},
+				"terminalAddToContext": {
+					"label": "Přidat obsah terminálu do kontextu",
+					"description": "Přidejte výstup terminálu do aktuálního úkolu nebo konverzace. Užitečné pro poskytování výstupů příkazů nebo protokolů. Dostupné v kontextové nabídce terminálu (pravý klik na vybraný obsah terminálu)."
+				},
+				"terminalFix": {
+					"label": "Opravit příkaz terminálu",
+					"description": "Získejte pomoc s opravou příkazů terminálu, které selhaly nebo potřebují vylepšení. Dostupné v kontextové nabídce terminálu (pravý klik na vybraný obsah terminálu)."
+				},
+				"terminalExplain": {
+					"label": "Vysvětlit příkaz terminálu",
+					"description": "Získejte podrobná vysvětlení příkazů terminálu a jejich výstupů. Dostupné v kontextové nabídce terminálu (pravý klik na vybraný obsah terminálu)."
+				}
+			}
+		}
+	},
+	"mcp": {
+		"title": "MCP servery",
+		"modelContextProtocol": "Model Context Protocol",
+		"description": {
+			"part1": "umožňuje komunikaci s lokálně běžícími MCP servery, které poskytují další nástroje a zdroje pro rozšíření schopností CoolCline. Můžete použít",
+			"part2": "nebo požádat CoolCline o vytvoření nových nástrojů specifických pro váš workflow (např. \"přidat nástroj, který získá nejnovější npm dokumentaci\")."
+		},
+		"communityServers": "servery vytvořené komunitou",
+		"enable": {
+			"title": "Povolit MCP servery",
+			"description": "Když je povoleno, CoolCline bude moci komunikovat s MCP servery pro pokročilé funkce. Pokud nepoužíváte MCP, můžete toto vypnout pro snížení využití tokenů CoolCline."
+		},
+		"serverCreation": {
+			"title": "Povolit vytváření MCP serverů",
+			"description": "Když je povoleno, CoolCline může pomoci vytvářet nové MCP servery pomocí příkazů jako \"přidat nový nástroj pro...\". Pokud nepotřebujete vytvářet MCP servery, můžete toto vypnout pro snížení využití tokenů CoolCline."
+		},
+		"editSettings": "Upravit nastavení MCP",
+		"tools": {
+			"title": "Nástroje",
+			"parameters": "Parametry",
+			"alwaysAllow": "Vždy povolit",
+			"noTools": "Žádné nástroje nenalezeny"
+		},
+		"resources": {
+			"title": "Zdroje",
+			"returns": "Vrací",
+			"noResources": "Žádné zdroje nenalezeny"
+		},
+		"timeout": {
+			"15": "15 sekund",
+			"30": "30 sekund",
+			"60": "1 minuta",
+			"300": "5 minut",
+			"600": "10 minut",
+			"900": "15 minut",
+			"1800": "30 minut",
+			"3600": "60 minut",
+			"title": "Síťový timeout",
+			"description": "Maximální doba čekání na odpovědi serveru"
+		},
+		"server": {
+			"restart": "Restartovat server",
+			"restarting": "Restartování...",
+			"retry": "Zkusit připojení znovu",
+			"retrying": "Opakování pokusu..."
+		}
+	},
+	"history": {
+		"title": "Historie",
+		"search": {
+			"placeholder": "Fuzzy vyhledávání v historii...",
+			"clear": "Vymazat vyhledávání"
+		},
+		"sort": {
+			"newest": "Nejnovější",
+			"oldest": "Nejstarší",
+			"mostExpensive": "Nejdražší",
+			"mostTokens": "Nejvíce tokenů",
+			"mostRelevant": "Nejrelevantnější"
+		},
+		"preview": {
+			"recentTasks": "Nedávné úkoly",
+			"viewAll": "Zobrazit celou historii",
+			"promptCopied": "Prompt zkopírován do schránky",
+			"copyPrompt": "Zkopírováno",
+			"metrics": {
+				"tokens": "Tokeny",
+				"cache": "Mezipaměť",
+				"apiCost": "Náklady API"
+			}
+		}
+	},
+	"settings": {
+		"title": "Nastavení",
+		"done": "Hotovo",
+		"provider": {
+			"title": "Nastavení LLM Provider",
+			"llmProvider": "LLM Provider",
+			"apiKey": {
+				"title": "API Key",
+				"placeholder": "Zadejte váš LLM Provider API Key",
+				"storedLocally": "LLM Provider API Key je bezpečně uložen na vašem lokálním počítači",
+				"getKey": "Získat LLM Provider API Key"
+			},
+			"customBaseUrl": {
+				"title": "Vlastní Base URL",
+				"placeholder": "Výchozí: {{defaultUrl}}"
+			},
+			"configProfile": {
+				"title": "Konfigurace rychlého přepínání LLM Provider",
+				"description": "Zde můžete vytvářet a spravovat více možností LLM Provider. Pro stejný LLM Provider můžete vytvořit samostatné možnosti pro různé modely, přičemž každá možnost ukládá kompletní konfigurační informace aktuálního LLM Provider. Po vytvoření můžete konfiguraci přepínat v reálném čase ve spodní části chatovacího pole. Konfigurační informace zahrnují: LLM Provider, API Key, Model a další konfigurační položky související s LLM Provider. Postup vytvoření možnosti LLM Provider (krok 4 lze prohodit s kroky 2 a 3): 1. Klikněte na tlačítko +, systém automaticky zkopíruje možnost z aktuální konfigurace s názvem xx (copy); 2. Klikněte na ikonu ✏️ pro úpravu názvu možnosti; 3. Klikněte na ☑️ pro uložení názvu možnosti; 4. Podle potřeby upravte základní parametry jako Model (úpravy se automaticky uloží při ztrátě zaměření). Doporučení pro pojmenování možností: Doporučuje se struktura \"provider-model-version-feature\", například: openrouter-deepseek-v3-free; openrouter-deepseek-r1-free; deepseek-v3-official; deepseek-r1-official."
+			},
+			"providers": {
+				"anthropic": {
+					"name": "Anthropic",
+					"title": "Anthropic API Key",
+					"baseUrl": "Base URL (volitelné)",
+					"enterBaseUrl": "Zadejte API Base URL",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Můžete se zde zaregistrovat pro získání Anthropic API Key"
+				},
+				"openai": {
+					"name": "OpenAI kompatibilní",
+					"title": "Služba kompatibilní s OpenAI",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Zadejte Base URL",
+					"useAzure": "Použít Azure OpenAI",
+					"setAzureVersion": "Nastavit verzi Azure API",
+					"description": "Použít službu API kompatibilní s OpenAI",
+					"streaming": "Povolit streamování",
+					"modelConfig": {
+						"title": "Konfigurace modelu",
+						"description": "Nakonfigurujte schopnosti a cenové informace modelu",
+						"capabilities": {
+							"title": "Schopnosti modelu",
+							"description": "Nakonfigurujte schopnosti a ceny vašeho vlastního modelu kompatibilního s OpenAI",
+							"warning": "Buďte opatrní se schopnostmi modelu, protože mohou ovlivnit způsob fungování CoolCline",
+							"maxTokens": {
+								"title": "Maximální výstupní tokeny",
+								"description": "Maximální počet tokenů, které model může vygenerovat v jedné odpovědi",
+								"note": "(-1 závisí na serveru)"
+							},
+							"contextWindow": {
+								"title": "Velikost kontextového okna",
+								"description": "Celkový počet tokenů (vstup + výstup), které model může zpracovat. To pomáhá CoolCline Code správně fungovat"
+							}
+						},
+						"features": {
+							"title": "Funkce modelu",
+							"imageSupport": {
+								"title": "Podpora obrázků",
+								"description": "Povolte, pokud model může zpracovávat a rozumět obrázkům ve vstupu. Nutné pro asistenci založenou na obrázcích a vizuální porozumění kódu",
+								"note": "Umožňuje modelu analyzovat a rozumět obrázkům, což je klíčové pro vizuální asistenci s kódem"
+							},
+							"computerUse": {
+								"title": "Použití počítače",
+								"description": "Povolte, pokud model může komunikovat s vaším počítačem prostřednictvím příkazů a operací se soubory. Nutné pro automatizované úkoly a úpravy souborů",
+								"note": "Tato funkce modelu je pro použití počítače jako podpora sonnet 3.5"
+							}
+						},
+						"pricing": {
+							"title": "Ceny modelu",
+							"description": "Nakonfigurujte ceny tokenů v USD za milion tokenů",
+							"inputPrice": {
+								"title": "Vstupní cena",
+								"description": "Náklady za milion tokenů ve vstupu/promptu. To ovlivňuje náklady na odesílání kontextu a instrukcí modelu"
+							},
+							"outputPrice": {
+								"title": "Výstupní cena",
+								"description": "Náklady za milion tokenů v odpovědi modelu. To ovlivňuje náklady na generovaný obsah a dokončení"
+							}
+						}
+					}
+				},
+				"openaiNative": {
+					"name": "OpenAI Native",
+					"title": "OpenAI API Key",
+					"description": "Použít oficiální API službu OpenAI",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Můžete se zde zaregistrovat pro získání OpenAI API Key"
+				},
+				"glama": {
+					"name": "Glama",
+					"title": "Glama API Key",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Získat Glama API Key"
+				},
+				"bedrock": {
+					"name": "AWS Bedrock",
+					"title": "AWS Bedrock",
+					"credentials": "AWS přihlašovací údaje",
+					"profile": "AWS profil",
+					"accessKey": "Access Key ID",
+					"secretKey": "Secret Key",
+					"sessionToken": "Session Token (volitelné)",
+					"region": "Region",
+					"selectRegion": "Vybrat region",
+					"useCrossRegion": "Použít Cross-Region Inference",
+					"description": "Použít AWS Bedrock AI model službu",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Konfigurovat AWS přihlašovací údaje"
+				},
+				"openRouter": {
+					"name": "OpenRouter",
+					"title": "OpenRouter API Key",
+					"getKey": "Získat OpenRouter API Key",
+					"compressPrompts": "Komprimovat prompty a řetězec zpráv na velikost kontextu",
+					"transforms": "OpenRouter transformace",
+					"useCustomBaseUrl": "Použít vlastní Base URL"
+				},
+				"vertex": {
+					"name": "Google Vertex AI",
+					"title": "Google Vertex AI",
+					"projectId": "ID projektu Google Cloud",
+					"enterProjectId": "Zadejte ID projektu",
+					"region": "Oblast Google Cloud",
+					"selectRegion": "Vyberte oblast",
+					"description": "Pro použití Google Cloud Vertex AI musíte 1) vytvořit účet Google Cloud › aktivovat Vertex AI API › aktivovat požadované modely Claude, 2) nainstalovat Google Cloud CLI › nakonfigurovat výchozí přihlašovací údaje aplikace.",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Získat Google Vertex AI API Key"
+				},
+				"mistral": {
+					"name": "Mistral",
+					"title": "Mistral API Key",
+					"description": "Použít službu modelů Mistral AI",
+					"getKey": "Můžete se zde zaregistrovat pro získání Mistral API Key",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"placeholder": "Zadejte API Key..."
+				},
+				"gemini": {
+					"name": "Gemini",
+					"title": "Gemini API Key",
+					"description": "Použít model Gemini AI od Google",
+					"getKey": "Získat Gemini API Key",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"placeholder": "Zadejte API Key..."
+				},
+				"ollama": {
+					"name": "Ollama",
+					"title": "Ollama",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Zadejte Base URL",
+					"modelId": "ID modelu",
+					"enterModelId": "Příklad: meta-llama-3.1-8b-instruct",
+					"description": "Ollama umožňuje lokálně spouštět open source jazykové modely",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Získat Ollama API Key",
+					"quickstartGuide": "Průvodce rychlým startem",
+					"localServer": "Lokální server"
+				},
+				"lmstudio": {
+					"name": "LM Studio",
+					"title": "LM Studio",
+					"baseUrl": "Base URL (volitelné)",
+					"modelId": "ID modelu",
+					"enterModelId": "Příklad: meta-llama-3.1-8b-instruct",
+					"description": "LM Studio vám umožňuje spouštět modely na vašem lokálním počítači. Podívejte se do průvodce rychlým startem pro pokyny, jak začít. Budete také muset spustit funkci lokálního serveru LM Studio, abyste jej mohli používat s tímto rozšířením.",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"getKey": "Nastavit LM Studio",
+					"quickstartGuide": "Průvodce rychlým startem",
+					"localServer": "Lokální server"
+				},
+				"vscode": {
+					"name": "GitHub Copilot LLM API",
+					"title": "VS Code LM API",
+					"description": "Použít vestavěné API jazykového modelu VS Code",
+					"modelSelector": "Jazykový model",
+					"selectModel": "Vybrat model...",
+					"noModels": "Nepodařilo se získat modely podporované VS Code LM API! Poznámka: Pokud se zobrazí tato zpráva, znamená to, že operace nebyla dokončena. Postupujte podle pokynů k dokončení operace. Nejprve musíte vyhledat, nainstalovat a přihlásit se do GitHub Copilot v marketplace rozšíření VS Code, než bude mít CoolCline přístup k jejich modelům. Konfigurace API klíče není nutná, protože to spravuje přihlášený účet.",
+					"experimentalNote": "Poznámka: Tato funkce může být nestabilní. Pokud se vyskytnou anomálie, odešlete prosím issue do CoolCline pro zpětnou vazbu.",
+					"useCustomBaseUrl": "Použít vlastní Base URL"
+				},
+				"unbound": {
+					"name": "Unbound",
+					"title": "Unbound API Key",
+					"getKey": "Získat Unbound API Key",
+					"useCustomBaseUrl": "Použít vlastní Base URL"
+				},
+				"deepseek": {
+					"name": "DeepSeek",
+					"title": "DeepSeek API Key",
+					"description": "Použít vysoce výkonnou službu modelů AI od DeepSeek",
+					"getKey": "Můžete se zde zaregistrovat pro získání DeepSeek API Key",
+					"useCustomBaseUrl": "Použít vlastní Base URL",
+					"placeholder": "Zadejte API Key..."
+				}
+			},
+			"model": {
+				"title": "Model",
+				"selectPlaceholder": "Vyberte model...",
+				"currentlySelected": "Aktuálně vybraný model:",
+				"search": "Hledat modely..."
+			},
+			"common": {
+				"modelCapabilityNote": "Poznámka: CoolCline používá složité prompty a funguje nejlépe s modely Claude. Modely s omezenými schopnostmi nemusí fungovat podle očekávání."
+			},
+			"temperature": {
+				"title": "Use Custom Temperature",
+				"description": "Controls the randomness of the model's responses. Higher values make the output more random, while lower values make it more deterministic."
+			}
+		},
+		"autoApprove": {
+			"title": "Nastavení automatického schvalování",
+			"description": "Následující nastavení umožňují CoolCline automaticky provádět operace bez nutnosti schválení. Povolte tato nastavení pouze pokud plně důvěřujete AI a rozumíte souvisejícím bezpečnostním rizikům.",
+			"readOnly": {
+				"title": "Vždy schválit operace pouze pro čtení",
+				"description": "Když je povoleno, CoolCline bude automaticky zobrazovat obsah adresářů a číst soubory bez nutnosti kliknout na tlačítko Schválit."
+			},
+			"write": {
+				"title": "Vždy schválit operace zápisu",
+				"description": "Automaticky vytvářet a upravovat soubory bez nutnosti schválení",
+				"delay": {
+					"title": "Zpoždění zápisu",
+					"description": "Zpoždění po zápisech pro umožnění diagnostiky detekovat potenciální problémy"
+				}
+			},
+			"browser": {
+				"title": "Vždy schválit akce prohlížeče",
+				"description": "Automaticky provádět akce prohlížeče bez nutnosti schválení Poznámka: Platí pouze když model podporuje použití počítače"
+			},
+			"retry": {
+				"title": "Vždy opakovat neúspěšné API požadavky",
+				"description": "Automaticky opakovat neúspěšné API požadavky, když server vrátí chybovou odpověď",
+				"delay": {
+					"title": "Zpoždění opakování",
+					"description": "Zpoždění před opakováním požadavku"
+				}
+			},
+			"mcp": {
+				"title": "Vždy schválit MCP nástroje",
+				"description": "Povolit automatické schvalování jednotlivých MCP nástrojů v zobrazení MCP serverů (vyžaduje toto nastavení i zaškrtnutí políčka \"Vždy povolit\" u nástroje)"
+			},
+			"modeSwitch": {
+				"title": "Vždy schválit přepínání režimů a vytváření úkolů",
+				"description": "Automaticky přepínat mezi různými AI režimy a vytvářet nové úkoly bez nutnosti schválení"
+			},
+			"execute": {
+				"title": "Vždy schválit povolené operace spuštění",
+				"description": "Automaticky spouštět povolené příkazy terminálu bez nutnosti schválení",
+				"commands": {
+					"title": "Povolené příkazy pro automatické spuštění",
+					"description": "Prefixy příkazů, které mohou být automaticky spuštěny, když je povoleno \"Vždy schválit operace spuštění\".",
+					"placeholder": "Zadejte prefix příkazu (např. 'git ')",
+					"add": "Přidat"
+				}
+			}
+		},
+		"browser": {
+			"title": "Nastavení prohlížeče",
+			"viewport": {
+				"title": "Velikost viewportu",
+				"description": "Vyberte velikost viewportu pro interakce prohlížeče. Toto ovlivňuje jak jsou webové stránky zobrazeny a jak s nimi lze interagovat.",
+				"options": {
+					"largeDesktop": "Velký desktop (1280x800)",
+					"smallDesktop": "Malý desktop (900x600)",
+					"tablet": "Tablet (768x1024)",
+					"mobile": "Mobil (360x640)"
+				}
+			},
+			"screenshot": {
+				"title": "Kvalita snímků obrazovky",
+				"description": "Upravte WebP kvalitu snímků obrazovky prohlížeče. Vyšší hodnoty poskytují jasnější snímky, ale zvyšují využití tokenů."
+			}
+		},
+		"notification": {
+			"title": "Nastavení oznámení",
+			"sound": {
+				"title": "Povolit zvukové efekty",
+				"description": "Když je povoleno, CoolCline bude přehrávat zvukové efekty pro oznámení a události.",
+				"volume": "Hlasitost"
+			}
+		},
+		"advanced": {
+			"title": "Pokročilá nastavení",
+			"experimental": {
+				"warning": "⚠️",
+				"features": {
+					"diffStrategy": {
+						"name": "Použít experimentální strategii diff",
+						"description": "Když je povoleno, CoolCline bude používat pokročilejší strategii diff, která může zvládnout složitější změny kódu. Toto je stále experimentální a nemusí fungovat správně ve všech případech."
+					}
+				}
+			},
+			"rateLimit": {
+				"title": "Omezení rychlosti",
+				"description": "Minimální čas mezi API požadavky."
+			},
+			"terminalOutput": {
+				"title": "Limit výstupu terminálu",
+				"description": "Maximální počet řádků, které budou zahrnuty ve výstupu terminálu při spouštění příkazů. Při překročení budou řádky odstraněny ze středu, šetříc tokeny."
+			},
+			"diff": {
+				"title": "Povolit úpravy pomocí diffů",
+				"description": "Když je povoleno, CoolCline bude moci upravovat soubory rychleji a automaticky odmítne zkrácené zápisy celých souborů. Funguje nejlépe s nejnovějším modelem Claude 3.5 Sonnet.",
+				"matchPrecision": {
+					"title": "Přesnost shody",
+					"description": "Tento posuvník ovládá jak přesně musí sekce kódu odpovídat při aplikování diffů. Nižší hodnoty umožňují flexibilnější shodu, ale zvyšují riziko nesprávných náhrad. Používejte hodnoty pod 100% s extrémní opatrností."
+				}
+			},
+			"checkpoints": {
+				"title": "Správa Git snímků",
+				"enable": "Povolit kontrolní body",
+				"description": "Když je povoleno, CoolCline automaticky vytvoří Git snímky po provedení úprav souborů AI (jako: zápis souborů, aplikace rozdílů, vkládání obsahu atd.). Podporuje ukládání, obnovení a porovnání stavů kódu.",
+				"features": {
+					"save": "Automatické ukládání snímků kódu",
+					"diff": "Podpora pro porovnání snímků",
+					"restore": "Podpora pro obnovení stavu kódu",
+					"integration": "Bezproblémová integrace se správou verzí Git"
+				}
+			}
+		},
+		"experiments": {
+			"title": "Experimentální funkce",
+			"description": "Povolit nebo zakázat experimentální funkce, které jsou stále ve vývoji",
+			"features": {
+				"DIFF_STRATEGY": {
+					"name": "Použít experimentální unifikovanou strategii diff",
+					"description": "Povolit experimentální unifikovanou strategii diff. Tato strategie může snížit počet opakování způsobených chybami modelu, ale může způsobit neočekávané chování nebo nesprávné úpravy. Povolte pouze pokud rozumíte rizikům a jste ochotni pečlivě kontrolovat všechny změny."
+				},
+				"SEARCH_AND_REPLACE": {
+					"name": "Použít experimentální nástroj pro vyhledávání a nahrazování",
+					"description": "Povolit experimentální nástroj pro vyhledávání a nahrazování, umožňující CoolCline nahradit více instancí vyhledávaného výrazu v jednom požadavku."
+				},
+				"INSERT_BLOCK": {
+					"name": "Použít experimentální nástroj pro vkládání obsahu",
+					"description": "Povolit experimentální nástroj pro vkládání obsahu, umožňující CoolCline vkládat obsah na konkrétní čísla řádků bez nutnosti vytvářet diff."
+				}
+			}
+		},
+		"footer": {
+			"description": "Pokud máte jakékoli otázky nebo zpětnou vazbu, neváhejte otevřít issue na",
+			"resetState": "Resetovat stav",
+			"resetStateDescription": "Toto resetuje veškerý globální stav a tajné úložiště v rozšíření."
+		}
+	}
+}

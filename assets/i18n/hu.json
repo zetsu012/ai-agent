@@ -1,0 +1,725 @@
+{
+	"common": {
+		"done": "Kész",
+		"add": "Hozzáadás",
+		"delete": "Törlés",
+		"rename": "Átnevezés",
+		"preview": "Előnézet",
+		"save": "Mentés",
+		"cancel": "Mégse",
+		"create": "Létrehozás",
+		"prompt": "Prompt",
+		"validation": {
+			"provideApiKey": "Érvényes API Key-t kell megadnia a jelenlegi LLM Provider számára, vagy válasszon másik LLM Provider-t amelyhez már konfigurált API Key-t.",
+			"provideRegion": "Ki kell választania egy régiót az AWS Bedrock használatához.",
+			"provideProjectAndRegion": "Érvényes Google Cloud projekt azonosítót és régiót kell megadnia.",
+			"provideBaseUrlAndKey": "Érvényes Base URL-t, API Key-t és modell azonosítót kell megadnia.",
+			"provideModelId": "Érvényes modell azonosítót kell megadnia.",
+			"provideModelSelector": "Érvényes modell választót kell megadnia.",
+			"modelNotAvailable": "A megadott modell azonosító nem érhető el. Kérjük, válasszon másik modellt."
+		},
+		"actions": {
+			"reset": "Alapértelmezésre állítás",
+			"edit": "Szerkesztés",
+			"save": "Mentés",
+			"cancel": "Mégse",
+			"close": "Bezárás",
+			"doneEditing": "Szerkesztés befejezése"
+		},
+		"status": {
+			"loading": "Betöltés...",
+			"error": "Hiba",
+			"success": "Sikeres"
+		},
+		"noDescription": "Nincs leírás",
+		"unknown": "Ismeretlen"
+	},
+	"welcome": {
+		"title": "Mi az a CoolCline?",
+		"description": "A CoolCline egy proaktív programozási asszisztens, amely fejlett AI képességekkel javítja a fejlesztési munkafolyamatot. Segít hatékonyabban kódolni, optimalizálni a lekérdezéseket, automatikusan javítani a hibákat, parancssori feladatokat futtatni és böngésző automatizálási teszteket végezni.",
+		"readmeLink": "README",
+		"llmProviderNeeded": "A kezdéshez ennek a bővítménynek legalább egy konfigurált LLM szolgáltatóra van szüksége (kötelező).",
+		"letsGo": "Kezdjük!"
+	},
+	"chat": {
+		"welcome": {
+			"title": "Mit tehetek Önért?",
+			"description": "A CoolCline egy proaktív programozási asszisztens, amely fejlett AI képességekkel javítja a fejlesztési munkafolyamatot. Segít hatékonyabban kódolni, optimalizálni a lekérdezéseket, automatikusan javítani a hibákat, parancssori feladatokat futtatni és böngésző automatizálási teszteket végezni.",
+			"readMore": "README"
+		},
+		"browser": {
+			"action": "Böngésző művelet",
+			"launch": "Böngésző indítása: {url}",
+			"click": "Kattintás ({coordinate})",
+			"type": "Beírás: \"{text}\"",
+			"scrollDown": "Görgetés le",
+			"scrollUp": "Görgetés fel",
+			"close": "Böngésző bezárása"
+		},
+		"task": {
+			"title": "Feladat",
+			"seeMore": "Több",
+			"seeLess": "Kevesebb",
+			"tokens": "Tokens",
+			"context": "Kontextus",
+			"cache": "Gyorsítótár",
+			"apiCost": "API költség",
+			"export": "EXPORTÁLÁS"
+		},
+		"messages": {
+			"error": "Hiba",
+			"trouble": "A CoolCline problémába ütközött...",
+			"executeCommand": "A CoolCline ezt a parancsot szeretné végrehajtani:",
+			"useTool": "eszköz használata",
+			"accessResource": "erőforrás elérése",
+			"taskCompleted": "Feladat befejezve",
+			"apiCancelled": "API kérés megszakítva",
+			"apiStreamingFailed": "API streaming sikertelen",
+			"apiRequest": "API kérés",
+			"apiFailed": "API kérés sikertelen",
+			"apiInProgress": "API kérés folyamatban...",
+			"question": "A CoolCline kérdése:",
+			"searchDirectory": "A CoolCline keresni szeretne ebben a könyvtárban",
+			"searchedDirectory": "A CoolCline keresett ebben a könyvtárban",
+			"switchMode": "A CoolCline szeretne átváltani",
+			"switchedMode": "A CoolCline átváltott",
+			"modeBecause": "módra, mert:",
+			"mode": "mód",
+			"response": "Válasz",
+			"copyAsMarkdown": "Másolás Markdown formátumban",
+			"warning": "Figyelmeztetés",
+			"taskIsRunningNote": "Jelenleg egy feladat fut. A következőket teheti:",
+			"taskIsRunningSelect1": "1. Várja meg az aktuális feladat befejezését",
+			"taskIsRunningSelect2": "2. Megszakítja az aktuális feladatot"
+		},
+		"actions": {
+			"send": "Küldés",
+			"cancelTask": "Feladat megszakítása",
+			"await": "Várakozás",
+			"edit": "Szerkesztés...",
+			"separator": "────",
+			"newChat": "Új beszélgetés",
+			"cancel": "Mégse",
+			"retry": "Újra",
+			"startNewTask": "Új feladat indítása",
+			"proceedAnyways": "Folytatás mindenképp",
+			"save": "Mentés",
+			"reject": "Elutasítás",
+			"approve": "Jóváhagyás",
+			"runCommand": "Parancs futtatása",
+			"proceedWhileRunning": "Folytatás futás közben",
+			"resumeTask": "Feladat folytatása",
+			"terminate": "Megszakítás"
+		},
+		"announcement": {
+			"title": "🎉 Bemutatjuk a CoolCline-t",
+			"customization": {
+				"title": "Egyéni módok: Ünnepeljük új identitásunkat",
+				"description": "Az új fejezet megjelölésére bevezetjük a lehetőséget, hogy a CoolCline-t bármilyen szerepkörre formálhassa! Hozzon létre specializált személyiségeket és alakítson ki egy teljes csapatot mélyen testreszabott promptokkal:",
+				"examples": {
+					"qa": "QA mérnökök, akik alapos teszteseteket írnak és észreveszik a határeseteket",
+					"pm": "Termékmenedzserek, akik kiválóak a felhasználói történetek és funkciók priorizálásában",
+					"ui": "UI/UX tervezők, akik szép és hozzáférhető felületeket alkotnak",
+					"reviewer": "Kódfelülvizsgálók, akik biztosítják a minőséget és karbantarthatóságot"
+				},
+				"getStarted": "Csak kattintson a jegyzetfüzet ikonra az Egyéni módok kezdéséhez!"
+			},
+			"join": {
+				"title": "Csatlakozzon hozzánk a következő fejezethez",
+				"description": "Alig várjuk, hogy láthassuk, hogyan fogja még tovább fejleszteni a CoolCline potenciálját! Ossza meg egyéni módjait és csatlakozzon a beszélgetéshez itt:"
+			}
+		},
+		"autoApprove": {
+			"title": "Automatikus jóváhagyás",
+			"none": "Nincs",
+			"description": "Az automatikus jóváhagyás lehetővé teszi a CoolCline számára, hogy engedély kérése nélkül hajtson végre műveleteket. Csak olyan műveletekhez engedélyezze, amelyekben teljesen megbízik.",
+			"actions": {
+				"readFiles": {
+					"label": "Fájlok és könyvtárak olvasása",
+					"description": "Lehetővé teszi bármely fájl olvasását a számítógépén."
+				},
+				"editFiles": {
+					"label": "Fájlok szerkesztése",
+					"description": "Lehetővé teszi bármely fájl módosítását a számítógépén."
+				},
+				"executeCommands": {
+					"label": "Jóváhagyott parancsok végrehajtása",
+					"description": "Lehetővé teszi a jóváhagyott terminál parancsok végrehajtását. Ezt a beállítások panelen konfigurálhatja."
+				},
+				"useBrowser": {
+					"label": "Böngésző használata",
+					"description": "Lehetővé teszi bármely weboldal indítását és használatát fejnélküli böngészőben."
+				},
+				"useMcp": {
+					"label": "MCP szerverek használata",
+					"description": "Lehetővé teszi a konfigurált MCP szerverek használatát, amelyek módosíthatják a fájlrendszert vagy API-kkal kommunikálhatnak."
+				},
+				"switchModes": {
+					"label": "Módok váltása és feladatok létrehozása",
+					"description": "Lehetővé teszi az automatikus váltást különböző AI módok között és új feladatok létrehozását jóváhagyás nélkül."
+				},
+				"retryRequests": {
+					"label": "Sikertelen kérések újrapróbálása",
+					"description": "Automatikusan újrapróbálja a sikertelen API kéréseket, amikor a szolgáltató hibaüzenetet küld."
+				}
+			}
+		},
+		"contextMenu": {
+			"problems": "Problémák",
+			"pasteUrl": "URL beillesztése tartalom lekéréséhez",
+			"noResults": "Nincs találat",
+			"gitCommits": "Git commitok",
+			"addFile": "Fájl hozzáadása",
+			"addFolder": "Mappa hozzáadása"
+		},
+		"reasoning": {
+			"title": "Következtetés"
+		},
+		"input": {
+			"typeMessage": "Írjon üzenetet...",
+			"typeTask": "Írja be a feladatot ide...",
+			"addContext": "(@ kontextus hozzáadásához",
+			"switchMode": ", / módváltáshoz",
+			"dragImages": ", tartsa lenyomva a Shift-et képek húzásához"
+		}
+	},
+	"prompts": {
+		"settings": {
+			"sections": {
+				"general": "Általános beállítások",
+				"modes": "Mód beállítások",
+				"tools": "Eszköz beállítások"
+			},
+			"language": {
+				"title": "Nyelv",
+				"description": "Válassza ki a felület preferált nyelvét",
+				"select": "Nyelv kiválasztása"
+			},
+			"customInstructions": {
+				"title": "Egyéni utasítások",
+				"description": "Adjon hozzá egyéni utasításokat, amelyek minden beszélgetésre vonatkoznak",
+				"loadFrom": "Betöltés innen:",
+				"inWorkspace": "a workspace-ben"
+			},
+			"modePrompts": {
+				"title": "Mód Promptok",
+				"description": "Promptok konfigurálása különböző módokhoz",
+				"createMode": "Új mód létrehozása",
+				"editConfig": "Konfiguráció szerkesztése",
+				"name": "Név",
+				"specificPrompts": "Módspecifikus promptok",
+				"slug": {
+					"title": "Azonosító",
+					"description": "Egyedi azonosító ehhez a módhoz (csak kisbetűk, számok és kötőjelek)"
+				},
+				"roleDefinition": {
+					"title": "Szerepkör meghatározása",
+					"description": "Határozza meg az AI szerepét és viselkedését ebben a módban",
+					"createDescription": "Határozza meg, hogyan viselkedjen az AI ebben a módban"
+				},
+				"apiConfig": {
+					"title": "API konfiguráció",
+					"description": "Válassza ki a használni kívánt API konfigurációt",
+					"useCurrentConfig": "Jelenlegi konfiguráció használata",
+					"enhancePrompts": "Válasszon specifikus API konfigurációt a prompt fejlesztéshez"
+				},
+				"tools": {
+					"title": "Elérhető eszközök",
+					"cannotModify": "A beépített módok eszközbeállításai nem módosíthatók",
+					"selectTools": "Válassza ki, mely eszközök legyenek elérhetők ebben a módban",
+					"availableTitle": "Elérhető eszközök listája",
+					"selectDescription": "Válassza ki, mely eszközök legyenek elérhetők ebben a módban"
+				},
+				"customInstructions": {
+					"title": "Módspecifikus utasítások",
+					"description": "Adjon hozzá viselkedési irányelveket a {mode} módhoz",
+					"loadFrom": "A {mode} mód specifikus utasításai betölthetők innen:",
+					"inWorkspace": "a workspace-ben",
+					"createDescription": "Adjon hozzá viselkedési irányelveket ehhez a módhoz",
+					"modeSpecific": "Módspecifikus utasítások"
+				},
+				"preview": "Rendszer Prompt előnézete"
+			},
+			"api": {
+				"title": "API beállítások",
+				"configProfile": {
+					"title": "Konfigurációs profilok",
+					"description": "API profilok konfigurálása a szolgáltatók közötti gyors váltáshoz a chat beviteli sávban"
+				},
+				"model": {
+					"title": "Modell",
+					"search": "Modellek keresése...",
+					"selected": "Jelenleg kiválasztott modell:"
+				},
+				"provider": {
+					"title": "Szolgáltató",
+					"openai": "OpenAI",
+					"glama": "Glama",
+					"openRouter": "OpenRouter"
+				}
+			},
+			"experimental": {
+				"title": "Kísérleti funkciók",
+				"description": "Kísérleti funkciók be- és kikapcsolása"
+			}
+		},
+		"support": {
+			"title": "Támogatási promptok beállításai",
+			"enhance": {
+				"title": "Fejlesztés",
+				"testPrompt": "Írjon be egy promptot a fejlesztés teszteléséhez",
+				"preview": "Prompt fejlesztés előnézete",
+				"enterPrompt": "Írjon be egy promptot a fejlesztés teszteléséhez"
+			},
+			"prompts": {
+				"enhance": {
+					"label": "Prompt fejlesztés",
+					"description": "Pontosabb javaslatokat és fejlesztéseket kaphat a prompt fejlesztésen keresztül. Ez biztosítja, hogy a CoolCline pontosan megértse szándékát és a legjobb választ adja. Elérhető a csevegőfelület ✨ ikonján keresztül."
+				},
+				"explain": {
+					"label": "Kódmagyarázat",
+					"description": "Részletes magyarázatot kap kódrészletekről, függvényekről vagy teljes fájlokról. Alkalmas összetett kód megértésére vagy új programozási minták tanulására. Elérhető az intelligens javaslatok (villanykörte ikon) vagy a szerkesztő jobb kattintásos menüjén keresztül."
+				},
+				"fix": {
+					"label": "Problémamegoldás",
+					"description": "Segít azonosítani és megoldani a program hibáit, bugokat vagy kódminőségi problémákat, lépésről lépésre útmutatást nyújtva a javításhoz. Elérhető az intelligens javaslatok (villanykörte ikon) vagy a szerkesztő jobb kattintásos menüjén keresztül."
+				},
+				"improve": {
+					"label": "Kódoptimalizálás",
+					"description": "Kódoptimalizálási javaslatokat, legjobb gyakorlatokat és architekturális fejlesztéseket kap a funkcionalitás megtartása mellett. Elérhető az intelligens javaslatok (villanykörte ikon) vagy a szerkesztő jobb kattintásos menüjén keresztül."
+				},
+				"addToContext": {
+					"label": "Kontextus hozzáadása",
+					"description": "Kiegészítő információkat adhat az aktuális feladathoz vagy beszélgetéshez. További magyarázatok vagy tisztázó részletek biztosítására használható. Elérhető az intelligens javaslatok (villanykörte ikon) vagy a szerkesztő jobb kattintásos menüjén keresztül."
+				},
+				"terminalAddToContext": {
+					"label": "Terminál tartalmának hozzáadása a kontextushoz",
+					"description": "Terminál kimenetének hozzáadása az aktuális feladathoz vagy beszélgetéshez. Hasznos parancsok kimenetének vagy naplók biztosításához. Elérhető a terminál helyi menüjében (jobb kattintás a kijelölt terminál tartalmon)."
+				},
+				"terminalFix": {
+					"label": "Terminál parancs javítása",
+					"description": "Segítség kérése a sikertelen vagy fejlesztésre szoruló terminál parancsok javításához. Elérhető a terminál helyi menüjében (jobb kattintás a kijelölt terminál tartalmon)."
+				},
+				"terminalExplain": {
+					"label": "Terminál parancs magyarázata",
+					"description": "Részletes magyarázatok a terminál parancsokról és kimeneteikről. Elérhető a terminál helyi menüjében (jobb kattintás a kijelölt terminál tartalmon)."
+				}
+			}
+		}
+	},
+	"mcp": {
+		"title": "MCP szerverek",
+		"modelContextProtocol": "Modell Kontextus Protokoll",
+		"description": {
+			"part1": "Engedélyezze a kommunikációt a helyileg futó MCP szerverekkel, amelyek további eszközöket és erőforrásokat biztosítanak a CoolCline képességeinek bővítéséhez. Használhatja a",
+			"part2": "vagy kérheti a CoolCline-t, hogy hozzon létre új eszközöket az Ön munkafolyamatához (például, \"hozzon létre egy eszközt a legfrissebb npm dokumentáció lekéréséhez\")."
+		},
+		"communityServers": "Közösség által létrehozott szerverek",
+		"enable": {
+			"title": "MCP szerverek engedélyezése",
+			"description": "Ha engedélyezve van, a CoolCline kommunikálhat MCP szerverekkel a speciális funkciók eléréséhez. Ha nem használja az MCP-t, letilthatja ezt a funkciót a CoolCline token használatának csökkentéséhez."
+		},
+		"serverCreation": {
+			"title": "MCP szerver létrehozás engedélyezése",
+			"description": "Ha engedélyezve van, a CoolCline segíthet új MCP szerverek létrehozásában olyan parancsokkal, mint \"hozzon létre egy eszközt a...\". Ha nem kell MCP szervereket létrehoznia, letilthatja ezt a funkciót a CoolCline token használatának csökkentéséhez."
+		},
+		"editSettings": "MCP beállítások szerkesztése",
+		"tools": {
+			"title": "Eszközök",
+			"parameters": "Paraméterek",
+			"alwaysAllow": "Mindig engedélyezve",
+			"noTools": "Nem találhatók eszközök"
+		},
+		"resources": {
+			"title": "Erőforrások",
+			"returns": "Visszatérési értékek",
+			"noResources": "Nem találhatók erőforrások"
+		},
+		"timeout": {
+			"15": "15 másodperc",
+			"30": "30 másodperc",
+			"60": "1 perc",
+			"300": "5 perc",
+			"600": "10 perc",
+			"900": "15 perc",
+			"1800": "30 perc",
+			"3600": "60 perc",
+			"title": "Hálózati időtúllépés",
+			"description": "Maximális várakozási idő a szerver válaszára"
+		},
+		"server": {
+			"restart": "Szerver újraindítása",
+			"restarting": "Újraindítás...",
+			"retry": "Kapcsolat újrapróbálása",
+			"retrying": "Újrapróbálás..."
+		}
+	},
+	"history": {
+		"title": "Előzmények",
+		"search": {
+			"placeholder": "Előzmények keresése...",
+			"clear": "Keresés törlése"
+		},
+		"sort": {
+			"newest": "Legújabb",
+			"oldest": "Legrégebbi",
+			"mostExpensive": "Legdrágább",
+			"mostTokens": "Legtöbb token",
+			"mostRelevant": "Legrelevánsabb"
+		},
+		"preview": {
+			"recentTasks": "Legutóbbi feladatok",
+			"viewAll": "Összes előzmény megtekintése",
+			"promptCopied": "Másolva",
+			"copyPrompt": "Másolva",
+			"metrics": {
+				"tokens": "Tokens",
+				"cache": "Gyorsítótár",
+				"apiCost": "API költség"
+			}
+		}
+	},
+	"settings": {
+		"title": "Beállítások",
+		"done": "Kész",
+		"provider": {
+			"title": "LLM Provider beállítások",
+			"llmProvider": "LLM Provider",
+			"apiKey": {
+				"title": "API Key",
+				"placeholder": "Adja meg az LLM Provider API Key-t",
+				"storedLocally": "Az LLM Provider API Key biztonságosan tárolva van a helyi gépen",
+				"getKey": "API Key beszerzése"
+			},
+			"customBaseUrl": {
+				"title": "Egyéni Base URL",
+				"placeholder": "Alapértelmezett: {{defaultUrl}}"
+			},
+			"configProfile": {
+				"title": "LLM Provider gyors váltás beállítások",
+				"description": "Itt létrehozhat és kezelhet több LLM Provider beállítást. Létrehozhat külön beállításokat ugyanazon LLM Provider különböző modelljeihez, minden beállítás tartalmazza az aktuális LLM Provider teljes konfigurációját. Létrehozás után válthat a konfigurációk között a chat beviteli mező alján."
+			},
+			"providers": {
+				"anthropic": {
+					"name": "Anthropic",
+					"title": "Anthropic API Key",
+					"baseUrl": "Base URL (opcionális)",
+					"enterBaseUrl": "Adja meg az API Base URL-t",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "Itt regisztrálhat Anthropic API Key beszerzéséhez"
+				},
+				"openai": {
+					"name": "OpenAI kompatibilis",
+					"title": "OpenAI-kompatibilis szolgáltatás",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Adja meg a Base URL-t",
+					"useAzure": "Azure OpenAI használata",
+					"setAzureVersion": "Azure API verzió beállítása",
+					"description": "OpenAI-kompatibilis API szolgáltatás használata",
+					"streaming": "Streaming engedélyezése",
+					"modelConfig": {
+						"title": "Modell konfiguráció",
+						"description": "Modell képességek és árazási információk konfigurálása",
+						"capabilities": {
+							"title": "Modell képességek",
+							"description": "Konfigurálja az egyéni OpenAI-kompatibilis modellje képességeit és árazását",
+							"warning": "Legyen óvatos a modell képességeivel, mivel ezek befolyásolhatják a CoolCline működését",
+							"maxTokens": {
+								"title": "Maximális kimeneti tokenek",
+								"description": "A modell által egy válaszban generálható tokenek maximális száma",
+								"note": "(-1 szervertől függ)"
+							},
+							"contextWindow": {
+								"title": "Kontextus ablak mérete",
+								"description": "A modell által feldolgozható összes token száma (bemenet + kimenet). Ez segíti a CoolCline Code megfelelő működését"
+							}
+						},
+						"features": {
+							"title": "Modell funkciók",
+							"imageSupport": {
+								"title": "Képtámogatás",
+								"description": "Engedélyezze, ha a modell képes feldolgozni és értelmezni a bemeneti képeket. Képalapú segítségnyújtáshoz és vizuális kódértelmezéshez szükséges",
+								"note": "Lehetővé teszi a modell számára a képek elemzését és megértését, ami elengedhetetlen a kód vizuális segítségnyújtásához"
+							},
+							"computerUse": {
+								"title": "Számítógép használat",
+								"description": "Engedélyezze, ha a modell képes parancsok és fájlműveletek révén kommunikálni a számítógépével. Automatizált feladatokhoz és fájlmódosításokhoz szükséges",
+								"note": "Ez a modell funkció a számítógép használatához való, mint a sonnet 3.5 támogatás"
+							}
+						},
+						"pricing": {
+							"title": "Modell árazás",
+							"description": "Token alapú árazás konfigurálása USD-ben millió tokenenként",
+							"inputPrice": {
+								"title": "Bemeneti ár",
+								"description": "Költség millió tokenenként a bemenetben/promptban. Ez befolyásolja a kontextus és utasítások modellnek való küldésének költségét"
+							},
+							"outputPrice": {
+								"title": "Kimeneti ár",
+								"description": "Költség millió tokenenként a modell válaszában. Ez befolyásolja a generált tartalom és kiegészítések költségét"
+							}
+						}
+					}
+				},
+				"openaiNative": {
+					"name": "OpenAI Native",
+					"title": "OpenAI API Key",
+					"description": "Használja az OpenAI hivatalos API szolgáltatását",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "Itt regisztrálhat OpenAI API Key beszerzéséhez"
+				},
+				"glama": {
+					"name": "Glama",
+					"title": "Glama API Key",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "Glama API Key beszerzése"
+				},
+				"bedrock": {
+					"name": "AWS Bedrock",
+					"title": "AWS Bedrock",
+					"credentials": "AWS hitelesítő adatok",
+					"profile": "AWS profil",
+					"accessKey": "Hozzáférési kulcs azonosító",
+					"secretKey": "Titkos kulcs",
+					"sessionToken": "Munkamenet token (opcionális)",
+					"region": "Régió",
+					"selectRegion": "Régió kiválasztása",
+					"useCrossRegion": "Régióközi következtetés használata",
+					"description": "AWS Bedrock AI modell szolgáltatás használata",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "AWS hitelesítő adatok beállítása"
+				},
+				"openRouter": {
+					"name": "OpenRouter",
+					"title": "OpenRouter API Key",
+					"getKey": "OpenRouter API Key beszerzése",
+					"compressPrompts": "Promptok és üzenetláncok tömörítése kontextus mérethez",
+					"transforms": "OpenRouter átalakítások",
+					"useCustomBaseUrl": "Egyéni Base URL használata"
+				},
+				"vertex": {
+					"name": "Google Vertex AI",
+					"title": "Google Vertex AI",
+					"projectId": "Google Cloud projekt azonosító",
+					"enterProjectId": "Adja meg a projekt azonosítót",
+					"region": "Google Cloud régió",
+					"selectRegion": "Régió kiválasztása",
+					"description": "A Google Cloud Vertex AI használatához 1) létre kell hoznia egy Google Cloud fiókot › aktiválnia kell a Vertex AI API-t › aktiválnia kell a szükséges Claude modelleket, 2) telepítenie kell a Google Cloud CLI-t › konfigurálnia kell az alapértelmezett alkalmazás hitelesítő adatokat.",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "Google Vertex AI API Key beszerzése"
+				},
+				"mistral": {
+					"name": "Mistral",
+					"title": "Mistral API Key",
+					"description": "Használja a Mistral AI modell szolgáltatást",
+					"getKey": "Itt regisztrálhat Mistral API Key beszerzéséhez",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"placeholder": "Adja meg az API Key-t..."
+				},
+				"gemini": {
+					"name": "Gemini",
+					"title": "Gemini API Key",
+					"description": "Használja a Google Gemini AI modellt",
+					"getKey": "Gemini API Key beszerzése",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"placeholder": "Adja meg az API Key-t..."
+				},
+				"ollama": {
+					"name": "Ollama",
+					"title": "Ollama",
+					"baseUrl": "Base URL",
+					"enterBaseUrl": "Adja meg a Base URL-t",
+					"modelId": "Modell ID",
+					"enterModelId": "Például: meta-llama-3.1-8b-instruct",
+					"description": "Az Ollama lehetővé teszi a nyílt forráskódú nyelvi modellek helyi futtatását",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "Ollama beállítása",
+					"quickstartGuide": "Gyors kezdési útmutató",
+					"localServer": "Helyi szerver"
+				},
+				"lmstudio": {
+					"name": "LM Studio",
+					"title": "LM Studio",
+					"baseUrl": "Base URL (opcionális)",
+					"modelId": "Modell ID",
+					"enterModelId": "Például: meta-llama-3.1-8b-instruct",
+					"description": "Az LM Studio lehetővé teszi modellek futtatását a helyi számítógépén. A kezdéshez tekintse meg a gyors kezdési útmutatót. A bővítménnyel való használathoz el kell indítania az LM Studio helyi szerver funkcióját is.",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"getKey": "LM Studio beállítása",
+					"quickstartGuide": "Gyors kezdési útmutató",
+					"localServer": "Helyi szerver"
+				},
+				"vscode": {
+					"name": "GitHub Copilot LLM API",
+					"title": "VS Code LM API",
+					"description": "Használja a VS Code beépített nyelvi modell API-ját",
+					"modelSelector": "Nyelvi modell",
+					"selectModel": "Modell kiválasztása...",
+					"noModels": "Nem sikerült lekérni a VS Code LM API által támogatott modelleket! Megjegyzés: Ha ez az üzenet megjelenik, az azt jelenti, hogy egy művelet nem fejeződött be. Kérjük, kövesse az utasításokat a művelet befejezéséhez. Először meg kell keresnie, telepítenie és bejelentkeznie a GitHub Copilot-ba a VS Code bővítmény piactéren, mielőtt a CoolCline hozzáférhetne a modelljeikhez. API kulcs konfigurálása nem szükséges, mivel a bejelentkezett fiók kezeli ezt.",
+					"experimentalNote": "Megjegyzés: Ez a funkció instabil lehet. Ha rendellenességek lépnek fel, kérjük, küldjön egy issue-t a CoolCline-nak visszajelzésként.",
+					"useCustomBaseUrl": "Egyéni Base URL használata"
+				},
+				"unbound": {
+					"name": "Unbound",
+					"title": "Unbound API Key",
+					"getKey": "Unbound API Key beszerzése",
+					"useCustomBaseUrl": "Egyéni Base URL használata"
+				},
+				"deepseek": {
+					"name": "DeepSeek",
+					"title": "DeepSeek API Key",
+					"description": "Használja a DeepSeek nagy teljesítményű AI modell szolgáltatását",
+					"getKey": "Itt regisztrálhat DeepSeek API Key beszerzéséhez",
+					"useCustomBaseUrl": "Egyéni Base URL használata",
+					"placeholder": "Adja meg az API Key-t..."
+				}
+			},
+			"model": {
+				"title": "Modell",
+				"selectPlaceholder": "Modell kiválasztása...",
+				"currentlySelected": "Jelenleg kiválasztott modell:",
+				"search": "Modellek keresése..."
+			},
+			"common": {
+				"modelCapabilityNote": "Megjegyzés: A CoolCline összetett promptokat használ, és a Claude modellekkel működik a legjobban. A korlátozott képességű modellek lehet, hogy nem a várt módon működnek."
+			},
+			"temperature": {
+				"title": "Egyéni hőmérséklet használata",
+				"description": "Szabályozza a modell válaszainak véletlenszerűségét. A magasabb értékek véletlenszerűbbé teszik a kimenetet, míg az alacsonyabb értékek determinisztikusabbá teszik."
+			}
+		},
+		"autoApprove": {
+			"title": "Automatikus jóváhagyás beállítások",
+			"description": "Az alábbi beállítások lehetővé teszik a CoolCline számára műveletek automatikus végrehajtását jóváhagyás nélkül. Csak akkor engedélyezze ezeket a beállításokat, ha teljesen megbízik az AI-ban és tisztában van a biztonsági kockázatokkal.",
+			"readOnly": {
+				"title": "Csak olvasható műveletek automatikus jóváhagyása",
+				"description": "Ha engedélyezve van, a CoolCline automatikusan megtekinti a könyvtárak tartalmát és olvas fájlokat a jóváhagyó gomb megnyomása nélkül."
+			},
+			"write": {
+				"title": "Írási műveletek automatikus jóváhagyása",
+				"description": "Fájlok automatikus létrehozása és szerkesztése jóváhagyás nélkül",
+				"delay": {
+					"title": "Írási késleltetés",
+					"description": "Késleltetés írás után a potenciális problémák diagnosztizálásának lehetővé tételéhez"
+				}
+			},
+			"browser": {
+				"title": "Böngésző műveletek automatikus jóváhagyása",
+				"description": "Böngésző műveletek automatikus végrehajtása jóváhagyás nélkül Megjegyzés: Csak akkor alkalmazható, ha a modell támogatja a számítógép használatát"
+			},
+			"retry": {
+				"title": "Sikertelen API kérések automatikus újrapróbálása",
+				"description": "Sikertelen API kérések automatikus újrapróbálása, amikor a szerver hibát ad vissza",
+				"delay": {
+					"title": "Újrapróbálási késleltetés",
+					"description": "Késleltetés a kérés újrapróbálása előtt"
+				}
+			},
+			"mcp": {
+				"title": "MCP eszközök automatikus jóváhagyása",
+				"description": "Egyedi MCP eszközök automatikus jóváhagyásának engedélyezése az MCP szerver nézetben (mind ezt a beállítást, mind az egyedi eszköz \"Mindig engedélyezve\" jelölőnégyzetét be kell jelölni)"
+			},
+			"modeSwitch": {
+				"title": "Módváltás és feladat létrehozás automatikus jóváhagyása",
+				"description": "Automatikus váltás különböző AI módok között és új feladatok létrehozása jóváhagyás nélkül"
+			},
+			"execute": {
+				"title": "Engedélyezett végrehajtási műveletek automatikus jóváhagyása",
+				"description": "Engedélyezett terminál parancsok automatikus végrehajtása jóváhagyás nélkül",
+				"commands": {
+					"title": "Automatikusan végrehajtható parancsok",
+					"description": "Parancs előtagok, amelyek automatikusan végrehajthatók, amikor az \"Engedélyezett végrehajtási műveletek automatikus jóváhagyása\" be van kapcsolva.",
+					"placeholder": "Adjon meg parancs előtagot (pl.: 'git ')",
+					"add": "Hozzáadás"
+				}
+			}
+		},
+		"browser": {
+			"title": "Böngésző beállítások",
+			"viewport": {
+				"title": "Ablakméret",
+				"description": "Válassza ki a böngésző interakciók ablakméretét. Ez befolyásolja, hogyan jelennek meg és működnek a weboldalak.",
+				"options": {
+					"largeDesktop": "Nagy asztali (1280x800)",
+					"smallDesktop": "Kis asztali (900x600)",
+					"tablet": "Táblagép (768x1024)",
+					"mobile": "Mobil (360x640)"
+				}
+			},
+			"screenshot": {
+				"title": "Képernyőkép minőség",
+				"description": "A böngésző képernyőképek WebP minőségének beállítása. A magasabb értékek tisztább képernyőképeket eredményeznek, de növelik a token használatot."
+			}
+		},
+		"notification": {
+			"title": "Értesítési beállítások",
+			"sound": {
+				"title": "Hangok engedélyezése",
+				"description": "Ha engedélyezve van, a CoolCline hangokat játszik le értesítésekhez és eseményekhez.",
+				"volume": "Hangerő"
+			}
+		},
+		"advanced": {
+			"title": "Haladó beállítások",
+			"experimental": {
+				"warning": "⚠️",
+				"features": {
+					"diffStrategy": {
+						"name": "Kísérleti diff stratégia használata",
+						"description": "Ha engedélyezve van, a CoolCline fejlettebb diff stratégiát használ, amely képes összetettebb kódváltoztatások kezelésére. Ez még kísérleti fázisban van, és nem minden esetben működhet megfelelően."
+					}
+				}
+			},
+			"rateLimit": {
+				"title": "Sebességkorlátozás",
+				"description": "Minimális időköz az API kérések között."
+			},
+			"terminalOutput": {
+				"title": "Terminál kimenet korlát",
+				"description": "Parancs végrehajtásakor a terminál kimenetben szereplő sorok maximális száma. A túllépés esetén a sorok a közepéről kerülnek eltávolításra a tokenek megtakarítása érdekében."
+			},
+			"diff": {
+				"title": "Diff szerkesztés engedélyezése",
+				"description": "Ha engedélyezve van, a CoolCline gyorsabban tud fájlokat szerkeszteni és automatikusan elutasítja a szűretlen teljes fájl írásokat. A legjobban a legújabb Claude 3.5 Sonnet modellel működik.",
+				"matchPrecision": {
+					"title": "Egyezési pontosság",
+					"description": "Ez a csúszka szabályozza, hogy mennyire pontosan kell egyeznie a kódrészleteknek a diff alkalmazásakor. Az alacsonyabb értékek rugalmasabb egyezést tesznek lehetővé, de növelik a hibás helyettesítések kockázatát. Óvatosan használja a 100% alatti értékeket."
+				}
+			},
+			"checkpoints": {
+				"title": "Git pillanatkép kezelés",
+				"enable": "Ellenőrzőpontok engedélyezése",
+				"description": "Ha engedélyezve van, a CoolCline automatikusan Git pillanatképeket készít, miután az AI fájlmódosításokat végez (pl. fájlok írása, különbségek alkalmazása, tartalom beszúrása). Támogatja a kód állapotának megőrzését, visszaállítását és összehasonlítását.",
+				"features": {
+					"save": "Kód pillanatképek automatikus mentése",
+					"diff": "Pillanatképek összehasonlításának támogatása",
+					"restore": "Kód állapot visszaállításának támogatása",
+					"integration": "Zökkenőmentes integráció a Git verziókezeléssel"
+				}
+			}
+		},
+		"experiments": {
+			"title": "Kísérleti funkciók",
+			"description": "Fejlesztés alatt álló kísérleti funkciók be- és kikapcsolása",
+			"features": {
+				"DIFF_STRATEGY": {
+					"name": "Kísérleti integrált diff stratégia használata",
+					"description": "Kísérleti integrált diff stratégia engedélyezése. Ez a stratégia csökkentheti a modell hibái miatti újrapróbálkozások számát, de váratlan viselkedést vagy hibás szerkesztéseket okozhat. Csak akkor engedélyezze, ha tisztában van a kockázatokkal és készen áll minden változtatás gondos áttekintésére."
+				},
+				"SEARCH_AND_REPLACE": {
+					"name": "Kísérleti keresés és csere eszköz használata",
+					"description": "Kísérleti keresés és csere eszköz engedélyezése, amely lehetővé teszi a CoolCline számára egy keresési kifejezés több példányának cseréjét egy kérésben."
+				},
+				"INSERT_BLOCK": {
+					"name": "Kísérleti tartalom beszúró eszköz használata",
+					"description": "Kísérleti tartalom beszúró eszköz engedélyezése, amely lehetővé teszi a CoolCline számára tartalom beszúrását megadott sorszámra diff létrehozása nélkül."
+				}
+			}
+		},
+		"footer": {
+			"description": "Ha kérdése vagy visszajelzése van, nyisson egy problémát itt",
+			"resetState": "Állapot visszaállítása",
+			"resetStateDescription": "Ez visszaállítja a bővítmény összes globális állapotát és titkos tárolóját."
+		}
+	}
+}
