@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Mistral } from "@mistralai/mistralai"
+import { withRetry } from "../retry"
 import { ApiHandler } from "../"
 import {
 	ApiHandlerOptions,
@@ -14,8 +15,6 @@ import {
 import { convertToMistralMessages } from "../transform/mistral-format"
 import { ApiStream } from "../transform/stream"
 
-const MISTRAL_DEFAULT_TEMPERATURE = 0
-
 export class MistralHandler implements ApiHandler {
 	private options: ApiHandlerOptions
 	private client: Mistral
@@ -23,16 +22,16 @@ export class MistralHandler implements ApiHandler {
 	constructor(options: ApiHandlerOptions) {
 		this.options = options
 		this.client = new Mistral({
-			serverURL: "https://codestral.mistral.ai",
-			apiKey: this.options.mistralApiKey ?? "mistral-api-key-not-configured",
+			apiKey: this.options.mistralApiKey,
 		})
 	}
 
+	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const stream = await this.client.chat.stream({
 			model: this.getModel().id,
 			// max_completion_tokens: this.getModel().info.maxTokens,
-			temperature: this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE,
+			temperature: 0,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToMistralMessages(messages)],
 			stream: true,
 		})

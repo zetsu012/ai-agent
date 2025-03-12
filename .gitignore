@@ -1,32 +1,12 @@
-dist
 out
-out-integration
+dist
 node_modules
-coverage/
+tmp
+.vscode-test/
+*.vsix
 
 .DS_Store
 
-# Builds
-bin/
-coolcline-*.vsix
+pnpm-lock.yaml
 
-# Local prompts and rules
-/local-prompts
-
-# Test environment
-.test_env
-.vscode-test/
-
-# Docs
-docs/_site/
-
-# Dotenv
-.env.integration
-
-re/
-.merge-skip
-.eslintrc.local.json
-
-# Logs
-logs/
-mcpmarketplace/
+.clineignore

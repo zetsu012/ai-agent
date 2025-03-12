@@ -1,113 +1,97 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ModelInfo } from "../../shared/api"
 
-/**
- * 截断对话，通过移除一定比例的消息。
- *
- * 第一条消息始终保留，并且从开始（不包括第一条）移除指定比例（向下取整为偶数）
- * 的消息。
- *
- * @param {Anthropic.Messages.MessageParam[]} messages - 对话消息。
- * @param {number} fracToRemove - 要移除的消息比例（0到1之间）。
- * @returns {Anthropic.Messages.MessageParam[]} 截断后的对话消息。
- */
-export function truncateConversation(
+/*
+We can't implement a dynamically updating sliding window as it would break prompt cache
+every time. To maintain the benefits of caching, we need to keep conversation history
+static. This operation should be performed as infrequently as possible. If a user reaches
+a 200k context, we can assume that the first half is likely irrelevant to their current task.
+Therefore, this function should only be called when absolutely necessary to fit within
+context limits, not as a continuous process.
+*/
+// export function truncateHalfConversation(
+// 	messages: Anthropic.Messages.MessageParam[],
+// ): Anthropic.Messages.MessageParam[] {
+// 	// API expects messages to be in user-assistant order, and tool use messages must be followed by tool results. We need to maintain this structure while truncating.
+
+// 	// Always keep the first Task message (this includes the project's file structure in environment_details)
+// 	const truncatedMessages = [messages[0]]
+
+// 	// Remove half of user-assistant pairs
+// 	const messagesToRemove = Math.floor(messages.length / 4) * 2 // has to be even number
+
+// 	const remainingMessages = messages.slice(messagesToRemove + 1) // has to start with assistant message since tool result cannot follow assistant message with no tool use
+// 	truncatedMessages.push(...remainingMessages)
+
+// 	return truncatedMessages
+// }
+
+/*
+getNextTruncationRange: Calculates the next range of messages to be "deleted"
+- Takes the full messages array and optional current deleted range
+- Always preserves the first message (task message)
+- Removes 1/2 of remaining messages (rounded down to even number) after current deleted range
+- Returns [startIndex, endIndex] representing inclusive range to delete
+
+getTruncatedMessages: Constructs the truncated array using the deleted range
+- Takes full messages array and optional deleted range
+- Returns new array with messages in deleted range removed
+- Preserves order and structure of remaining messages
+
+The range is represented as [startIndex, endIndex] where both indices are inclusive
+The functions maintain the original array integrity while allowing progressive truncation 
+through the deletedRange parameter
+
+Usage example:
+const messages = [user1, assistant1, user2, assistant2, user3, assistant3];
+let deletedRange = getNextTruncationRange(messages); // [1,2] (assistant1,user2)
+let truncated = getTruncatedMessages(messages, deletedRange); 
+// [user1, assistant2, user3, assistant3]
+
+deletedRange = getNextTruncationRange(messages, deletedRange); // [2,3] (assistant2,user3) 
+truncated = getTruncatedMessages(messages, deletedRange);
+// [user1, assistant3]
+*/
+
+export function getNextTruncationRange(
 	messages: Anthropic.Messages.MessageParam[],
-	fracToRemove: number,
-): Anthropic.Messages.MessageParam[] {
-	if (messages.length <= 1) return messages
+	currentDeletedRange: [number, number] | undefined = undefined,
+	keep: "half" | "quarter" = "half",
+): [number, number] {
+	// Since we always keep the first message, currentDeletedRange[0] will always be 1 (for now until we have a smarter truncation algorithm)
+	const rangeStartIndex = 1
+	const startOfRest = currentDeletedRange ? currentDeletedRange[1] + 1 : 1
 
-	// 保留第一条消息
-	const firstMessage = messages[0]
-	const remainingMessages = messages.slice(1)
-
-	// 计算要保留的消息对数量（每对包含一个用户消息和一个助手消息）
-	const pairs = Math.floor(remainingMessages.length / 2)
-	const pairsToKeep = Math.ceil(pairs * (1 - fracToRemove))
-	const messagesToKeep = pairsToKeep * 2
-
-	// 保留第一条消息和最后几对消息
-	return [firstMessage, ...remainingMessages.slice(remainingMessages.length - messagesToKeep)]
-}
-
-/**
- * 根据总token数是否超过模型限制来有条件地截断对话消息。
- *
- * 根据模型是否支持prompt缓存，使用不同的最大token阈值和截断比例。
- * 如果当前总token数超过阈值，则使用适当的比例截断对话。
- *
- * @param {Anthropic.Messages.MessageParam[]} messages - 对话消息。
- * @param {number} totalTokens - 对话中的总token数。
- * @param {ModelInfo} modelInfo - 模型元数据，包括上下文窗口大小和prompt缓存支持。
- * @returns {Anthropic.Messages.MessageParam[]} 原始或截断后的对话消息。
- */
-export function truncateConversationIfNeeded(
-	messages: Anthropic.Messages.MessageParam[],
-	totalTokens: number,
-	modelInfo: ModelInfo,
-): Anthropic.Messages.MessageParam[] {
-	const maxTokens = modelInfo.supportsPromptCache
-		? getMaxTokensForPromptCachingModels(modelInfo)
-		: getMaxTokensForNonPromptCachingModels(modelInfo)
-
-	// 如果总token数接近或超过最大值，进行截断
-	if (totalTokens >= maxTokens * 0.95) {
-		const truncFraction = modelInfo.supportsPromptCache
-			? getTruncFractionForPromptCachingModels()
-			: getTruncFractionForNonPromptCachingModels(modelInfo)
-
-		return truncateConversation(messages, truncFraction)
+	let messagesToRemove: number
+	if (keep === "half") {
+		// Remove half of user-assistant pairs
+		messagesToRemove = Math.floor((messages.length - startOfRest) / 4) * 2 // Keep even number
+	} else {
+		// Remove 3/4 of user-assistant pairs
+		messagesToRemove = Math.floor((messages.length - startOfRest) / 8) * 3 * 2
 	}
 
-	return messages
+	let rangeEndIndex = startOfRest + messagesToRemove - 1
+
+	// Make sure the last message being removed is a user message, so that the next message after the initial task message is an assistant message. This preservers the user-assistant-user-assistant structure.
+	// NOTE: anthropic format messages are always user-assistant-user-assistant, while openai format messages can have multiple user messages in a row (we use anthropic format throughout cline)
+	if (messages[rangeEndIndex].role !== "user") {
+		rangeEndIndex -= 1
+	}
+
+	// this is an inclusive range that will be removed from the conversation history
+	return [rangeStartIndex, rangeEndIndex]
 }
 
-/**
- * 计算支持prompt缓存的模型的最大允许token数。
- *
- * 最大值计算为(contextWindow - 40000)和contextWindow的80%中的较大值。
- *
- * @param {ModelInfo} modelInfo - 包含上下文窗口大小的模型信息。
- * @returns {number} prompt缓存模型允许的最大token数。
- */
-function getMaxTokensForPromptCachingModels(modelInfo: ModelInfo): number {
-	return Math.max(modelInfo.contextWindow - 40_000, modelInfo.contextWindow * 0.8)
-}
-
-/**
- * 提供支持prompt缓存的模型的消息截断比例。
- *
- * @returns {number} prompt缓存模型的截断比例（固定为0.5）。
- */
-function getTruncFractionForPromptCachingModels(): number {
-	return 0.5
-}
-
-/**
- * 计算不支持prompt缓存的模型的最大允许token数。
- *
- * 最大值计算为(contextWindow - 40000)和contextWindow的80%中的较大值。
- *
- * @param {ModelInfo} modelInfo - 包含上下文窗口大小的模型信息。
- * @returns {number} 非prompt缓存模型允许的最大token数。
- */
-function getMaxTokensForNonPromptCachingModels(modelInfo: ModelInfo): number {
-	return Math.max(modelInfo.contextWindow - 40_000, modelInfo.contextWindow * 0.8)
-}
-
-/**
- * 提供不支持prompt缓存的模型的消息截断比例。
- *
- * @param {ModelInfo} modelInfo - 模型信息。
- * @returns {number} 非prompt缓存模型的截断比例（最大为0.2）。
- */
-function getTruncFractionForNonPromptCachingModels(modelInfo: ModelInfo): number {
-	return Math.min(40_000 / modelInfo.contextWindow, 0.2)
-}
-
-// 为了向后兼容，保留原有函数但使用新实现
-export function truncateHalfConversation(
+export function getTruncatedMessages(
 	messages: Anthropic.Messages.MessageParam[],
+	deletedRange: [number, number] | undefined,
 ): Anthropic.Messages.MessageParam[] {
-	return truncateConversation(messages, 0.5)
+	if (!deletedRange) {
+		return messages
+	}
+
+	const [start, end] = deletedRange
+	// the range is inclusive - both start and end indices and everything in between will be removed from the final result.
+	// NOTE: if you try to console log these, don't forget that logging a reference to an array may not provide the same result as logging a slice() snapshot of that array at that exact moment. The following DOES in fact include the latest assistant message.
+	return [...messages.slice(0, start), ...messages.slice(end + 1)]
 }

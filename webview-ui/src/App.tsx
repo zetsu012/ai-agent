@@ -5,17 +5,18 @@ import ChatView from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
 import SettingsView from "./components/settings/SettingsView"
 import WelcomeView from "./components/welcome/WelcomeView"
+import AccountView from "./components/account/AccountView"
 import { ExtensionStateContextProvider, useExtensionState } from "./context/ExtensionStateContext"
+import { FirebaseAuthProvider } from "./context/FirebaseAuthContext"
 import { vscode } from "./utils/vscode"
 import McpView from "./components/mcp/McpView"
-import PromptsView from "./components/prompts/PromptsView"
 
 const AppContent = () => {
-	const { didHydrateState, showWelcome, shouldShowAnnouncement } = useExtensionState()
+	const { didHydrateState, showWelcome, shouldShowAnnouncement, telemetrySetting, vscMachineId } = useExtensionState()
 	const [showSettings, setShowSettings] = useState(false)
 	const [showHistory, setShowHistory] = useState(false)
 	const [showMcp, setShowMcp] = useState(false)
-	const [showPrompts, setShowPrompts] = useState(false)
+	const [showAccount, setShowAccount] = useState(false)
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
 
 	const handleMessage = useCallback((e: MessageEvent) => {
@@ -27,31 +28,31 @@ const AppContent = () => {
 						setShowSettings(true)
 						setShowHistory(false)
 						setShowMcp(false)
-						setShowPrompts(false)
+						setShowAccount(false)
 						break
 					case "historyButtonClicked":
 						setShowSettings(false)
 						setShowHistory(true)
 						setShowMcp(false)
-						setShowPrompts(false)
+						setShowAccount(false)
 						break
 					case "mcpButtonClicked":
 						setShowSettings(false)
 						setShowHistory(false)
 						setShowMcp(true)
-						setShowPrompts(false)
+						setShowAccount(false)
 						break
-					case "promptsButtonClicked":
+					case "accountLoginClicked":
 						setShowSettings(false)
 						setShowHistory(false)
 						setShowMcp(false)
-						setShowPrompts(true)
+						setShowAccount(true)
 						break
 					case "chatButtonClicked":
 						setShowSettings(false)
 						setShowHistory(false)
 						setShowMcp(false)
-						setShowPrompts(false)
+						setShowAccount(false)
 						break
 				}
 				break
@@ -59,6 +60,15 @@ const AppContent = () => {
 	}, [])
 
 	useEvent("message", handleMessage)
+
+	// useEffect(() => {
+	// 	if (telemetrySetting === "enabled") {
+	// 		posthog.identify(vscMachineId)
+	// 		posthog.opt_in_capturing()
+	// 	} else {
+	// 		posthog.opt_out_capturing()
+	// 	}
+	// }, [telemetrySetting, vscMachineId])
 
 	useEffect(() => {
 		if (shouldShowAnnouncement) {
@@ -80,16 +90,15 @@ const AppContent = () => {
 					{showSettings && <SettingsView onDone={() => setShowSettings(false)} />}
 					{showHistory && <HistoryView onDone={() => setShowHistory(false)} />}
 					{showMcp && <McpView onDone={() => setShowMcp(false)} />}
-					{showPrompts && <PromptsView onDone={() => setShowPrompts(false)} />}
+					{showAccount && <AccountView onDone={() => setShowAccount(false)} />}
 					{/* Do not conditionally load ChatView, it's expensive and there's state we don't want to lose (user input, disableInput, askResponse promise, etc.) */}
 					<ChatView
 						showHistoryView={() => {
 							setShowSettings(false)
 							setShowMcp(false)
-							setShowPrompts(false)
 							setShowHistory(true)
 						}}
-						isHidden={showSettings || showHistory || showMcp || showPrompts}
+						isHidden={showSettings || showHistory || showMcp || showAccount}
 						showAnnouncement={showAnnouncement}
 						hideAnnouncement={() => {
 							setShowAnnouncement(false)
@@ -104,7 +113,9 @@ const AppContent = () => {
 const App = () => {
 	return (
 		<ExtensionStateContextProvider>
-			<AppContent />
+			<FirebaseAuthProvider>
+				<AppContent />
+			</FirebaseAuthProvider>
 		</ExtensionStateContextProvider>
 	)
 }

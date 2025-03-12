@@ -1,12 +1,4 @@
 import * as vscode from "vscode"
-import { logger } from "../../utils/logging"
-
-// 扩展 VSCode 的类型定义
-declare module "vscode" {
-	interface TerminalOptions {
-		shellIntegration?: boolean
-	}
-}
 
 export interface TerminalInfo {
 	terminal: vscode.Terminal
@@ -21,27 +13,12 @@ export class TerminalRegistry {
 	private static terminals: TerminalInfo[] = []
 	private static nextTerminalId = 1
 
-	static async createTerminal(cwd?: string | vscode.Uri | undefined): Promise<TerminalInfo> {
-		logger.debug("创建新终端", {
-			ctx: "terminal",
-			cwd: cwd?.toString(),
-			shell: process.env.SHELL,
-		})
-
-		// 使用简化的配置创建终端
+	static createTerminal(cwd?: string | vscode.Uri | undefined): TerminalInfo {
 		const terminal = vscode.window.createTerminal({
 			cwd,
-			name: "CoolCline",
-			iconPath: new vscode.ThemeIcon("webhook"),
-			shellIntegration: true, // shell integration 配置
-			env: {
-				PAGER: "cat", // 防止命令进入交互式分页模式
-			},
+			name: "Cline",
+			iconPath: new vscode.ThemeIcon("robot"),
 		})
-
-		// 确保终端显示并激活
-		terminal.show(true)
-
 		const newInfo: TerminalInfo = {
 			terminal,
 			busy: false,

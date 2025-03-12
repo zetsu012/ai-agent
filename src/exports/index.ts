@@ -1,12 +1,9 @@
 import * as vscode from "vscode"
-import { CoolClineProvider } from "../core/webview/CoolClineProvider"
-import { CoolClineAPI } from "./coolcline"
+import { ClineProvider } from "../core/webview/ClineProvider"
+import { ClineAPI } from "./cline"
 
-export function createCoolClineAPI(
-	outputChannel: vscode.OutputChannel,
-	sidebarProvider: CoolClineProvider,
-): CoolClineAPI {
-	const api: CoolClineAPI = {
+export function createClineAPI(outputChannel: vscode.OutputChannel, sidebarProvider: ClineProvider): ClineAPI {
+	const api: ClineAPI = {
 		setCustomInstructions: async (value: string) => {
 			await sidebarProvider.updateCustomInstructions(value)
 			outputChannel.appendLine("Custom instructions set")
@@ -20,7 +17,10 @@ export function createCoolClineAPI(
 			outputChannel.appendLine("Starting new task")
 			await sidebarProvider.clearTask()
 			await sidebarProvider.postStateToWebview()
-			await sidebarProvider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+			await sidebarProvider.postMessageToWebview({
+				type: "action",
+				action: "chatButtonClicked",
+			})
 			await sidebarProvider.postMessageToWebview({
 				type: "invoke",
 				invoke: "sendMessage",
@@ -59,8 +59,6 @@ export function createCoolClineAPI(
 				invoke: "secondaryButtonClick",
 			})
 		},
-
-		sidebarProvider: sidebarProvider,
 	}
 
 	return api

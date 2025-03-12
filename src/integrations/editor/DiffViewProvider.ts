@@ -1,4 +1,5 @@
 import * as vscode from "vscode"
+import * as path from "path"
 import * as fs from "fs/promises"
 import { createDirectoriesForFile } from "../../utils/fs"
 import { arePathsEqual } from "../../utils/path"
@@ -6,9 +7,8 @@ import { formatResponse } from "../../core/prompts/responses"
 import { DecorationController } from "./DecorationController"
 import * as diff from "diff"
 import { diagnosticsToProblemsString, getNewDiagnostics } from "../diagnostics"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
 
-export const DIFF_VIEW_URI_SCHEME = "coolcline-diff"
+export const DIFF_VIEW_URI_SCHEME = "cline-diff"
 
 export class DiffViewProvider {
 	editType?: "create" | "modify"
@@ -29,19 +29,17 @@ export class DiffViewProvider {
 	async open(relPath: string): Promise<void> {
 		this.relPath = relPath
 		const fileExists = this.editType === "modify"
-		const absolutePath = PathUtils.normalizePath(PathUtils.joinPath(this.cwd, relPath))
+		const absolutePath = path.resolve(this.cwd, relPath)
 		this.isEditing = true
 		// if the file is already open, ensure it's not dirty before getting its contents
 		if (fileExists) {
-			const existingDocument = vscode.workspace.textDocuments.find((doc) =>
-				arePathsEqual(doc.uri.fsPath, absolutePath),
-			)
+			const existingDocument = vscode.workspace.textDocuments.find((doc) => arePathsEqual(doc.uri.fsPath, absolutePath))
 			if (existingDocument && existingDocument.isDirty) {
 				await existingDocument.save()
 			}
 		}
 
-		// get diagnostics before editing the file, we'll compare to diagnostics after editing to see if coolcline needs to fix anything
+		// get diagnostics before editing the file, we'll compare to diagnostics after editing to see if cline needs to fix anything
 		this.preDiagnostics = vscode.languages.getDiagnostics()
 
 		if (fileExists) {
@@ -61,9 +59,7 @@ export class DiffViewProvider {
 		const tabs = vscode.window.tabGroups.all
 			.map((tg) => tg.tabs)
 			.flat()
-			.filter(
-				(tab) => tab.input instanceof vscode.TabInputText && arePathsEqual(tab.input.uri.fsPath, absolutePath),
-			)
+			.filter((tab) => tab.input instanceof vscode.TabInputText && arePathsEqual(tab.input.uri.fsPath, absolutePath))
 		for (const tab of tabs) {
 			if (!tab.isDirty) {
 				await vscode.window.tabGroups.close(tab)
@@ -88,6 +84,7 @@ export class DiffViewProvider {
 		if (!isFinal) {
 			accumulatedLines.pop() // remove the last partial line only if it's not the final update
 		}
+		const diffLines = accumulatedLines.slice(this.streamedLines.length)
 
 		const diffEditor = this.activeDiffEditor
 		const document = diffEditor?.document
@@ -99,19 +96,21 @@ export class DiffViewProvider {
 		const beginningOfDocument = new vscode.Position(0, 0)
 		diffEditor.selection = new vscode.Selection(beginningOfDocument, beginningOfDocument)
 
-		const endLine = accumulatedLines.length
-		// Replace all content up to the current line with accumulated lines
-		const edit = new vscode.WorkspaceEdit()
-		const rangeToReplace = new vscode.Range(0, 0, endLine + 1, 0)
-		const contentToReplace = accumulatedLines.slice(0, endLine + 1).join("\n") + "\n"
-		edit.replace(document.uri, rangeToReplace, contentToReplace)
-		await vscode.workspace.applyEdit(edit)
-		// Update decorations
-		this.activeLineController.setActiveLine(endLine)
-		this.fadedOverlayController.updateOverlayAfterLine(endLine, document.lineCount)
-		// Scroll to the current line
-		this.scrollEditorToLine(endLine)
-
+		for (let i = 0; i < diffLines.length; i++) {
+			const currentLine = this.streamedLines.length + i
+			// Replace all content up to the current line with accumulated lines
+			// This is necessary (as compared to inserting one line at a time) to handle cases where html tags on previous lines are auto closed for example
+			const edit = new vscode.WorkspaceEdit()
+			const rangeToReplace = new vscode.Range(0, 0, currentLine + 1, 0)
+			const contentToReplace = accumulatedLines.slice(0, currentLine + 1).join("\n") + "\n"
+			edit.replace(document.uri, rangeToReplace, contentToReplace)
+			await vscode.workspace.applyEdit(edit)
+			// Update decorations
+			this.activeLineController.setActiveLine(currentLine)
+			this.fadedOverlayController.updateOverlayAfterLine(currentLine, document.lineCount)
+			// Scroll to the current line
+			this.scrollEditorToLine(currentLine)
+		}
 		// Update the streamedLines with the new accumulated content
 		this.streamedLines = accumulatedLines
 		if (isFinal) {
@@ -121,16 +120,15 @@ export class DiffViewProvider {
 				edit.delete(document.uri, new vscode.Range(this.streamedLines.length, 0, document.lineCount, 0))
 				await vscode.workspace.applyEdit(edit)
 			}
-			// Preserve empty last line if original content had one
+			// Add empty last line if original content had one
 			const hasEmptyLastLine = this.originalContent?.endsWith("\n")
-			if (hasEmptyLastLine && !accumulatedContent.endsWith("\n")) {
-				accumulatedContent += "\n"
+			if (hasEmptyLastLine) {
+				const accumulatedLines = accumulatedContent.split("\n")
+				if (accumulatedLines[accumulatedLines.length - 1] !== "") {
+					accumulatedContent += "\n"
+				}
 			}
-			// Apply the final content
-			const finalEdit = new vscode.WorkspaceEdit()
-			finalEdit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), accumulatedContent)
-			await vscode.workspace.applyEdit(finalEdit)
-			// Clear all decorations at the end (after applying final edit)
+			// Clear all decorations at the end (before applying final edit)
 			this.fadedOverlayController.clear()
 			this.activeLineController.clear()
 		}
@@ -139,36 +137,51 @@ export class DiffViewProvider {
 	async saveChanges(): Promise<{
 		newProblemsMessage: string | undefined
 		userEdits: string | undefined
+		autoFormattingEdits: string | undefined
 		finalContent: string | undefined
 	}> {
 		if (!this.relPath || !this.newContent || !this.activeDiffEditor) {
-			return { newProblemsMessage: undefined, userEdits: undefined, finalContent: undefined }
+			return {
+				newProblemsMessage: undefined,
+				userEdits: undefined,
+				autoFormattingEdits: undefined,
+				finalContent: undefined,
+			}
 		}
-		const absolutePath = PathUtils.normalizePath(PathUtils.joinPath(this.cwd, this.relPath))
+		const absolutePath = path.resolve(this.cwd, this.relPath)
 		const updatedDocument = this.activeDiffEditor.document
-		const editedContent = updatedDocument.getText()
+
+		// get the contents before save operation which may do auto-formatting
+		const preSaveContent = updatedDocument.getText()
+
 		if (updatedDocument.isDirty) {
 			await updatedDocument.save()
 		}
 
-		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false })
+		// await delay(100)
+		// get text after save in case there is any auto-formatting done by the editor
+		const postSaveContent = updatedDocument.getText()
+
+		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+			preview: false,
+		})
 		await this.closeAllDiffViews()
 
 		/*
 		Getting diagnostics before and after the file edit is a better approach than
 		automatically tracking problems in real-time. This method ensures we only
 		report new problems that are a direct result of this specific edit.
-		Since these are new problems resulting from CoolCline's edit, we know they're
-		directly related to the work he's doing. This eliminates the risk of CoolCline
+		Since these are new problems resulting from Cline's edit, we know they're
+		directly related to the work he's doing. This eliminates the risk of Cline
 		going off-task or getting distracted by unrelated issues, which was a problem
 		with the previous auto-debug approach. Some users' machines may be slow to
 		update diagnostics, so this approach provides a good balance between automation
-		and avoiding potential issues where CoolCline might get stuck in loops due to
+		and avoiding potential issues where Cline might get stuck in loops due to
 		outdated problem information. If no new problems show up by the time the user
 		accepts the changes, they can always debug later using the '@problems' mention.
-		This way, CoolCline only becomes aware of new problems resulting from his edits
+		This way, Cline only becomes aware of new problems resulting from his edits
 		and can address them accordingly. If problems don't change immediately after
-		applying a fix, won't be notified, which is generally fine since the
+		applying a fix, Cline won't be notified, which is generally fine since the
 		initial fix is usually correct and it may just take time for linters to catch up.
 		*/
 		const postDiagnostics = vscode.languages.getDiagnostics()
@@ -184,20 +197,36 @@ export class DiffViewProvider {
 
 		// If the edited content has different EOL characters, we don't want to show a diff with all the EOL differences.
 		const newContentEOL = this.newContent.includes("\r\n") ? "\r\n" : "\n"
-		const normalizedEditedContent = editedContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL // trimEnd to fix issue where editor adds in extra new line automatically
+		const normalizedPreSaveContent = preSaveContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL // trimEnd to fix issue where editor adds in extra new line automatically
+		const normalizedPostSaveContent = postSaveContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL // this is the final content we return to the model to use as the new baseline for future edits
 		// just in case the new content has a mix of varying EOL characters
 		const normalizedNewContent = this.newContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL
-		if (normalizedEditedContent !== normalizedNewContent) {
-			// user made changes before approving edit
-			const userEdits = formatResponse.createPrettyPatch(
-				this.relPath.toPosix(),
-				normalizedNewContent,
-				normalizedEditedContent,
-			)
-			return { newProblemsMessage, userEdits, finalContent: normalizedEditedContent }
+
+		let userEdits: string | undefined
+		if (normalizedPreSaveContent !== normalizedNewContent) {
+			// user made changes before approving edit. let the model know about user made changes (not including post-save auto-formatting changes)
+			userEdits = formatResponse.createPrettyPatch(this.relPath.toPosix(), normalizedNewContent, normalizedPreSaveContent)
+			// return { newProblemsMessage, userEdits, finalContent: normalizedPostSaveContent }
 		} else {
-			// no changes to coolcline's edits
-			return { newProblemsMessage, userEdits: undefined, finalContent: normalizedEditedContent }
+			// no changes to cline's edits
+			// return { newProblemsMessage, userEdits: undefined, finalContent: normalizedPostSaveContent }
+		}
+
+		let autoFormattingEdits: string | undefined
+		if (normalizedPreSaveContent !== normalizedPostSaveContent) {
+			// auto-formatting was done by the editor
+			autoFormattingEdits = formatResponse.createPrettyPatch(
+				this.relPath.toPosix(),
+				normalizedPreSaveContent,
+				normalizedPostSaveContent,
+			)
+		}
+
+		return {
+			newProblemsMessage,
+			userEdits,
+			autoFormattingEdits,
+			finalContent: normalizedPostSaveContent,
 		}
 	}
 
@@ -207,7 +236,7 @@ export class DiffViewProvider {
 		}
 		const fileExists = this.editType === "modify"
 		const updatedDocument = this.activeDiffEditor.document
-		const absolutePath = PathUtils.normalizePath(PathUtils.joinPath(this.cwd, this.relPath))
+		const absolutePath = path.resolve(this.cwd, this.relPath)
 		if (!fileExists) {
 			if (updatedDocument.isDirty) {
 				await updatedDocument.save()
@@ -247,11 +276,7 @@ export class DiffViewProvider {
 	private async closeAllDiffViews() {
 		const tabs = vscode.window.tabGroups.all
 			.flatMap((tg) => tg.tabs)
-			.filter(
-				(tab) =>
-					tab.input instanceof vscode.TabInputTextDiff &&
-					tab.input?.original?.scheme === DIFF_VIEW_URI_SCHEME,
-			)
+			.filter((tab) => tab.input instanceof vscode.TabInputTextDiff && tab.input?.original?.scheme === DIFF_VIEW_URI_SCHEME)
 		for (const tab of tabs) {
 			// trying to close dirty views results in save popup
 			if (!tab.isDirty) {
@@ -264,7 +289,7 @@ export class DiffViewProvider {
 		if (!this.relPath) {
 			throw new Error("No file path set")
 		}
-		const uri = vscode.Uri.file(PathUtils.normalizePath(PathUtils.joinPath(this.cwd, this.relPath)))
+		const uri = vscode.Uri.file(path.resolve(this.cwd, this.relPath))
 		// If this diff editor is already open (ie if a previous write file was interrupted) then we should activate that instead of opening a new diff
 		const diffTab = vscode.window.tabGroups.all
 			.flatMap((group) => group.tabs)
@@ -280,7 +305,7 @@ export class DiffViewProvider {
 		}
 		// Open new diff editor
 		return new Promise<vscode.TextEditor>((resolve, reject) => {
-			const fileName = PathUtils.basename(uri.fsPath)
+			const fileName = path.basename(uri.fsPath)
 			const fileExists = this.editType === "modify"
 			const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
 				if (editor && arePathsEqual(editor.document.uri.fsPath, uri.fsPath)) {
@@ -294,7 +319,7 @@ export class DiffViewProvider {
 					query: Buffer.from(this.originalContent ?? "").toString("base64"),
 				}),
 				uri,
-				`${fileName}: ${fileExists ? "Original ↔ CoolCline's Changes" : "New File"} (Editable)`,
+				`${fileName}: ${fileExists ? "Original ↔ Cline's Changes" : "New File"} (Editable)`,
 			)
 			// This may happen on very slow machines ie project idx
 			setTimeout(() => {

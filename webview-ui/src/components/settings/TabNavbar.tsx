@@ -1,6 +1,5 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useState } from "react"
-import { useTranslation } from "react-i18next"
 
 export const TAB_NAVBAR_HEIGHT = 24
 const BUTTON_MARGIN_RIGHT = "3px"
@@ -89,7 +88,6 @@ const Tooltip: React.FC<TooltipProps> = ({ text, isVisible, position, align = "c
 }
 
 const TabNavbar = ({ onPlusClick, onHistoryClick, onSettingsClick }: TabNavbarProps) => {
-	const { t } = useTranslation()
 	const [tooltip, setTooltip] = useState<TooltipProps>({
 		text: "",
 		isVisible: false,
@@ -137,27 +135,27 @@ const TabNavbar = ({ onPlusClick, onHistoryClick, onSettingsClick }: TabNavbarPr
 					appearance="icon"
 					onClick={onPlusClick}
 					style={buttonStyle}
-					onMouseEnter={(e) => showTooltip(t("chat.actions.newChat"), e, "center")}
+					onMouseEnter={(e) => showTooltip("New Chat", e, "center")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip(t("chat.actions.newChat"), e, "center")}>
+					onMouseMove={(e) => showTooltip("New Chat", e, "center")}>
 					<span className="codicon codicon-add"></span>
 				</VSCodeButton>
 				<VSCodeButton
 					appearance="icon"
 					onClick={onHistoryClick}
 					style={buttonStyle}
-					onMouseEnter={(e) => showTooltip(t("history.title"), e, "center")}
+					onMouseEnter={(e) => showTooltip("History", e, "center")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip(t("history.title"), e, "center")}>
+					onMouseMove={(e) => showTooltip("History", e, "center")}>
 					<span className="codicon codicon-history"></span>
 				</VSCodeButton>
 				<VSCodeButton
 					appearance="icon"
 					onClick={onSettingsClick}
 					style={lastButtonStyle}
-					onMouseEnter={(e) => showTooltip(t("settings.title"), e, "right")}
+					onMouseEnter={(e) => showTooltip("Settings", e, "right")}
 					onMouseLeave={hideTooltip}
-					onMouseMove={(e) => showTooltip(t("settings.title"), e, "right")}>
+					onMouseMove={(e) => showTooltip("Settings", e, "right")}>
 					<span className="codicon codicon-settings-gear"></span>
 				</VSCodeButton>
 			</div>

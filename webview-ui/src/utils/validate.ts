@@ -1,77 +1,96 @@
-import { ApiConfiguration, glamaDefaultModelId, openRouterDefaultModelId } from "../../../src/shared/api"
+import { ApiConfiguration, openRouterDefaultModelId } from "../../../src/shared/api"
 import { ModelInfo } from "../../../src/shared/api"
-import i18next from "i18next"
-
 export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): string | undefined {
 	if (apiConfiguration) {
-		switch (apiConfiguration.llmProvider) {
+		switch (apiConfiguration.apiProvider) {
 			case "anthropic":
 				if (!apiConfiguration.apiKey) {
-					return i18next.t("common.validation.provideApiKey")
-				}
-				break
-			case "glama":
-				if (!apiConfiguration.glamaApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "bedrock":
 				if (!apiConfiguration.awsRegion) {
-					return i18next.t("common.validation.provideRegion")
+					return "You must choose a region to use with AWS Bedrock."
 				}
 				break
 			case "openrouter":
 				if (!apiConfiguration.openRouterApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "vertex":
 				if (!apiConfiguration.vertexProjectId || !apiConfiguration.vertexRegion) {
-					return i18next.t("common.validation.provideProjectAndRegion")
+					return "You must provide a valid Google Cloud Project ID and Region."
 				}
 				break
 			case "gemini":
 				if (!apiConfiguration.geminiApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "openai-native":
 				if (!apiConfiguration.openAiNativeApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "deepseek":
+				if (!apiConfiguration.deepSeekApiKey) {
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "xai":
+				if (!apiConfiguration.xaiApiKey) {
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "qwen":
+				if (!apiConfiguration.qwenApiKey) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "mistral":
 				if (!apiConfiguration.mistralApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
-			case "requesty":
-				if (!apiConfiguration.requestyApiKey) {
-					return i18next.t("common.validation.provideApiKey")
+			case "cline":
+				if (!apiConfiguration.clineApiKey) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "openai":
-				if (
-					!apiConfiguration.openAiBaseUrl ||
-					!apiConfiguration.openAiApiKey ||
-					!apiConfiguration.openAiModelId
-				) {
-					return i18next.t("common.validation.provideBaseUrlAndKey")
+				if (!apiConfiguration.openAiBaseUrl || !apiConfiguration.openAiApiKey || !apiConfiguration.openAiModelId) {
+					return "You must provide a valid base URL, API key, and model ID."
+				}
+				break
+			case "requesty":
+				if (!apiConfiguration.requestyApiKey || !apiConfiguration.requestyModelId) {
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "together":
+				if (!apiConfiguration.togetherApiKey || !apiConfiguration.togetherModelId) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 			case "ollama":
 				if (!apiConfiguration.ollamaModelId) {
-					return i18next.t("common.validation.provideModelId")
+					return "You must provide a valid model ID."
 				}
 				break
 			case "lmstudio":
 				if (!apiConfiguration.lmStudioModelId) {
-					return i18next.t("common.validation.provideModelId")
+					return "You must provide a valid model ID."
 				}
 				break
 			case "vscode-lm":
 				if (!apiConfiguration.vsCodeLmModelSelector) {
-					return i18next.t("common.validation.provideModelSelector")
+					return "You must provide a valid model selector."
+				}
+				break
+			case "asksage":
+				if (!apiConfiguration.asksageApiKey) {
+					return "You must provide a valid API key or choose a different provider."
 				}
 				break
 		}
@@ -81,29 +100,19 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 
 export function validateModelId(
 	apiConfiguration?: ApiConfiguration,
-	glamaModels?: Record<string, ModelInfo>,
 	openRouterModels?: Record<string, ModelInfo>,
 ): string | undefined {
 	if (apiConfiguration) {
-		switch (apiConfiguration.llmProvider) {
-			case "glama":
-				const glamaModelId = apiConfiguration.glamaModelId || glamaDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
-				if (!glamaModelId) {
-					return i18next.t("common.validation.provideModelId")
-				}
-				if (glamaModels && !Object.keys(glamaModels).includes(glamaModelId)) {
-					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return i18next.t("common.validation.modelNotAvailable")
-				}
-				break
+		switch (apiConfiguration.apiProvider) {
 			case "openrouter":
+			case "cline":
 				const modelId = apiConfiguration.openRouterModelId || openRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!modelId) {
-					return i18next.t("common.validation.provideModelId")
+					return "You must provide a model ID."
 				}
 				if (openRouterModels && !Object.keys(openRouterModels).includes(modelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return i18next.t("common.validation.modelNotAvailable")
+					return "The model ID you provided is not available. Please choose a different model."
 				}
 				break
 		}

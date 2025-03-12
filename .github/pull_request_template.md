@@ -1,37 +1,33 @@
-<!-- **Note:** Consider creating PRs as a DRAFT. For early feedback and self-review. -->
+### Description
 
-## Description
+<!-- Describe your changes in detail. What problem does this PR solve? -->
 
-## Type of change
+### Test Procedure
 
-<!-- Please ignore options that are not relevant -->
+<!-- How did you test this? Are you confident that it will not introduce bugs? If so, why? -->
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+### Type of Change
 
-## How Has This Been Tested?
+<!-- Put an 'x' in all boxes that apply -->
 
-<!-- Please describe the tests that you ran to verify your changes -->
+-   [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+-   [ ] ✨ New feature (non-breaking change which adds functionality)
+-   [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+-   [ ] 📚 Documentation update
 
-## Checklist:
+### Pre-flight Checklist
 
-<!-- Go over all the following points, and put an `x` in all the boxes that apply -->
+<!-- Put an 'x' in all boxes that apply -->
 
-- [ ] My code follows the patterns of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
+-   [ ] Changes are limited to a single feature, bugfix or chore (split larger changes into separate PRs)
+-   [ ] Tests are passing (`npm test`) and code is formatted and linted (`npm run format && npm run lint`)
+-   [ ] I have created a changeset using `npm run changeset` (required for user-facing changes)
+-   [ ] I have reviewed [contributor guidelines](https://github.com/cline/cline/blob/main/CONTRIBUTING.md)
 
-## Additional context
+### Screenshots
 
-<!-- Add any other context or screenshots about the pull request here -->
+<!-- For UI changes, add screenshots here -->
 
-## Related Issues
+### Additional Notes
 
-<!-- List any related issues here. Use the GitHub issue linking syntax: #issue-number -->
-
-## Reviewers
-
-<!-- @mention specific team members or individuals who should review this PR -->
+<!-- Add any additional notes for reviewers -->

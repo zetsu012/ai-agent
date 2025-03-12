@@ -1,15 +1,17 @@
 import * as vscode from "vscode"
+import * as path from "path"
 import { openFile } from "../../integrations/misc/open-file"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
-import { mentionRegexGlobal, formatGitSuggestion, type MentionSuggestion } from "../../shared/context-mentions"
+import { mentionRegexGlobal } from "../../shared/context-mentions"
 import fs from "fs/promises"
 import { extractTextFromFile } from "../../integrations/misc/extract-text"
 import { isBinaryFile } from "isbinaryfile"
 import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
-import { getCommitInfo, getWorkingState } from "../../utils/git"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
+import { getLatestTerminalOutput } from "../../integrations/terminal/get-latest-output"
+import { getCommitInfo } from "../../utils/git"
+import { getWorkingState } from "../../utils/git"
 
-export async function openMention(mention?: string): Promise<void> {
+export function openMention(mention?: string): void {
 	if (!mention) {
 		return
 	}
@@ -21,7 +23,7 @@ export async function openMention(mention?: string): Promise<void> {
 
 	if (mention.startsWith("/")) {
 		const relPath = mention.slice(1)
-		const absPath = PathUtils.normalizePath(PathUtils.joinPath(cwd, relPath))
+		const absPath = path.resolve(cwd, relPath)
 		if (mention.endsWith("/")) {
 			vscode.commands.executeCommand("revealInExplorer", vscode.Uri.file(absPath))
 		} else {
@@ -29,6 +31,8 @@ export async function openMention(mention?: string): Promise<void> {
 		}
 	} else if (mention === "problems") {
 		vscode.commands.executeCommand("workbench.actions.view.problems")
+	} else if (mention === "terminal") {
+		vscode.commands.executeCommand("workbench.action.terminal.focus")
 	} else if (mention.startsWith("http")) {
 		vscode.env.openExternal(vscode.Uri.parse(mention))
 	}
@@ -41,12 +45,14 @@ export async function parseMentions(text: string, cwd: string, urlContentFetcher
 		if (mention.startsWith("http")) {
 			return `'${mention}' (see below for site content)`
 		} else if (mention.startsWith("/")) {
-			const mentionPath = mention.slice(1)
+			const mentionPath = mention.slice(1) // Remove the leading '/'
 			return mentionPath.endsWith("/")
 				? `'${mentionPath}' (see below for folder content)`
 				: `'${mentionPath}' (see below for file content)`
 		} else if (mention === "problems") {
 			return `Workspace Problems (see below for diagnostics)`
+		} else if (mention === "terminal") {
+			return `Terminal Output (see below for output)`
 		} else if (mention === "git-changes") {
 			return `Working directory changes (see below for details)`
 		} else if (/^[a-f0-9]{7,40}$/.test(mention)) {
@@ -104,6 +110,13 @@ export async function parseMentions(text: string, cwd: string, urlContentFetcher
 			} catch (error) {
 				parsedText += `\n\n<workspace_diagnostics>\nError fetching diagnostics: ${error.message}\n</workspace_diagnostics>`
 			}
+		} else if (mention === "terminal") {
+			try {
+				const terminalOutput = await getLatestTerminalOutput()
+				parsedText += `\n\n<terminal_output>\n${terminalOutput}\n</terminal_output>`
+			} catch (error) {
+				parsedText += `\n\n<terminal_output>\nError fetching terminal output: ${error.message}\n</terminal_output>`
+			}
 		} else if (mention === "git-changes") {
 			try {
 				const workingState = await getWorkingState(cwd)
@@ -133,7 +146,7 @@ export async function parseMentions(text: string, cwd: string, urlContentFetcher
 }
 
 async function getFileOrFolderContent(mentionPath: string, cwd: string): Promise<string> {
-	const absPath = PathUtils.normalizePath(PathUtils.joinPath(cwd, mentionPath))
+	const absPath = path.resolve(cwd, mentionPath)
 
 	try {
 		const stats = await fs.stat(absPath)
@@ -154,8 +167,9 @@ async function getFileOrFolderContent(mentionPath: string, cwd: string): Promise
 				const linePrefix = isLast ? "└── " : "├── "
 				if (entry.isFile()) {
 					folderContent += `${linePrefix}${entry.name}\n`
-					const filePath = PathUtils.joinPath(mentionPath, entry.name)
-					const absoluteFilePath = PathUtils.normalizePath(PathUtils.joinPath(absPath, entry.name))
+					const filePath = path.join(mentionPath, entry.name)
+					const absoluteFilePath = path.resolve(absPath, entry.name)
+					// const relativeFilePath = path.relative(cwd, absoluteFilePath);
 					fileContentPromises.push(
 						(async () => {
 							try {
@@ -172,6 +186,7 @@ async function getFileOrFolderContent(mentionPath: string, cwd: string): Promise
 					)
 				} else if (entry.isDirectory()) {
 					folderContent += `${linePrefix}${entry.name}/\n`
+					// not recursively getting folder contents
 				} else {
 					folderContent += `${linePrefix}${entry.name}\n`
 				}

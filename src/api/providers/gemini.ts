@@ -1,20 +1,24 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { ApiHandler, SingleCompletionHandler } from "../"
+import { withRetry } from "../retry"
+import { ApiHandler } from "../"
 import { ApiHandlerOptions, geminiDefaultModelId, GeminiModelId, geminiModels, ModelInfo } from "../../shared/api"
 import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { ApiStream } from "../transform/stream"
-import { GEMINI_DEFAULT_TEMPERATURE } from "./constants"
 
-export class GeminiHandler implements ApiHandler, SingleCompletionHandler {
+export class GeminiHandler implements ApiHandler {
 	private options: ApiHandlerOptions
 	private client: GoogleGenerativeAI
 
 	constructor(options: ApiHandlerOptions) {
+		if (!options.geminiApiKey) {
+			throw new Error("API key is required for Google Gemini")
+		}
 		this.options = options
-		this.client = new GoogleGenerativeAI(options.geminiApiKey ?? "gemini-api-key-not-configured")
+		this.client = new GoogleGenerativeAI(options.geminiApiKey)
 	}
 
+	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const model = this.client.getGenerativeModel({
 			model: this.getModel().id,
@@ -24,7 +28,7 @@ export class GeminiHandler implements ApiHandler, SingleCompletionHandler {
 			contents: messages.map(convertAnthropicMessageToGemini),
 			generationConfig: {
 				// maxOutputTokens: this.getModel().info.maxTokens,
-				temperature: this.options.modelTemperature ?? GEMINI_DEFAULT_TEMPERATURE,
+				temperature: 0,
 			},
 		})
 
@@ -49,28 +53,9 @@ export class GeminiHandler implements ApiHandler, SingleCompletionHandler {
 			const id = modelId as GeminiModelId
 			return { id, info: geminiModels[id] }
 		}
-		return { id: geminiDefaultModelId, info: geminiModels[geminiDefaultModelId] }
-	}
-
-	async completePrompt(prompt: string): Promise<string> {
-		try {
-			const model = this.client.getGenerativeModel({
-				model: this.getModel().id,
-			})
-
-			const result = await model.generateContent({
-				contents: [{ role: "user", parts: [{ text: prompt }] }],
-				generationConfig: {
-					temperature: this.options.modelTemperature ?? GEMINI_DEFAULT_TEMPERATURE,
-				},
-			})
-
-			return result.response.text()
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Gemini completion error: ${error.message}`)
-			}
-			throw error
+		return {
+			id: geminiDefaultModelId,
+			info: geminiModels[geminiDefaultModelId],
 		}
 	}
 }

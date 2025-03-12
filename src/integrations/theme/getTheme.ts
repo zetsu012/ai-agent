@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
+import * as path from "path"
 import * as fs from "fs/promises"
 import { convertTheme } from "monaco-vscode-textmate-theme-converter/lib/cjs"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
 
 const defaultThemes: Record<string, string> = {
 	"Default Dark Modern": "dark_modern",
@@ -43,7 +43,7 @@ export async function getTheme() {
 			if (extension.packageJSON?.contributes?.themes?.length > 0) {
 				for (const theme of extension.packageJSON.contributes.themes) {
 					if (theme.label === colorTheme) {
-						const themePath = PathUtils.joinPath(extension.extensionPath, theme.path)
+						const themePath = path.join(extension.extensionPath, theme.path)
 						currentTheme = await fs.readFile(themePath, "utf-8")
 						break
 					}
@@ -54,14 +54,7 @@ export async function getTheme() {
 		if (currentTheme === undefined && defaultThemes[colorTheme]) {
 			const filename = `${defaultThemes[colorTheme]}.json`
 			currentTheme = await fs.readFile(
-				PathUtils.joinPath(
-					getExtensionUri().fsPath,
-					"src",
-					"integrations",
-					"theme",
-					"default-themes",
-					filename,
-				),
+				path.join(getExtensionUri().fsPath, "src", "integrations", "theme", "default-themes", filename),
 				"utf-8",
 			)
 		}
@@ -71,14 +64,7 @@ export async function getTheme() {
 
 		if (parsed.include) {
 			const includeThemeString = await fs.readFile(
-				PathUtils.joinPath(
-					getExtensionUri().fsPath,
-					"src",
-					"integrations",
-					"theme",
-					"default-themes",
-					parsed.include,
-				),
+				path.join(getExtensionUri().fsPath, "src", "integrations", "theme", "default-themes", parsed.include),
 				"utf-8",
 			)
 			const includeTheme = parseThemeString(includeThemeString)
@@ -88,11 +74,7 @@ export async function getTheme() {
 		const converted = convertTheme(parsed)
 
 		converted.base = (
-			["vs", "hc-black"].includes(converted.base)
-				? converted.base
-				: colorTheme.includes("Light")
-					? "vs"
-					: "vs-dark"
+			["vs", "hc-black"].includes(converted.base) ? converted.base : colorTheme.includes("Light") ? "vs" : "vs-dark"
 		) as any
 
 		return converted
@@ -155,10 +137,5 @@ export function mergeJson(
 }
 
 function getExtensionUri(): vscode.Uri {
-	// ${publisher}.${name}，${publisher} 是发布者，${name} 是扩展名，注意是要用 package.json 中的 publisher 和 name，区分大小写
-	const extension = vscode.extensions.getExtension("CoolCline.coolcline")
-	if (!extension) {
-		throw new Error("Extension not found. Please ensure the extension is properly loaded.")
-	}
-	return extension.extensionUri
+	return vscode.extensions.getExtension("saoudrizwan.claude-dev")!.extensionUri
 }

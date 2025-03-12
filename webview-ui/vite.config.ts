@@ -1,27 +1,30 @@
-import path from "path"
+/// <reference types="vitest/config" />
 
 import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
+import tailwindcss from "@tailwindcss/vite"
+import react from "@vitejs/plugin-react-swc"
 
-// https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [react()],
-	resolve: {
-		alias: {
-			"@": path.resolve(__dirname, "./src"),
-		},
+	plugins: [react(), tailwindcss()],
+	test: {
+		environment: "jsdom",
+		globals: true,
+		setupFiles: ["./src/setupTests.ts"],
 	},
 	build: {
 		outDir: "build",
 		rollupOptions: {
 			output: {
+				inlineDynamicImports: true,
 				entryFileNames: `assets/[name].js`,
 				chunkFileNames: `assets/[name].js`,
 				assetFileNames: `assets/[name].[ext]`,
 			},
 		},
+		chunkSizeWarningLimit: 100000,
 	},
 	server: {
+		port: 25463,
 		hmr: {
 			host: "localhost",
 			protocol: "ws",
@@ -33,6 +36,9 @@ export default defineConfig({
 		},
 	},
 	define: {
-		"process.platform": JSON.stringify(process.platform),
+		"process.env": {
+			NODE_ENV: JSON.stringify(process.env.IS_DEV ? "development" : "production"),
+			IS_DEV: JSON.stringify(process.env.IS_DEV),
+		},
 	},
 })

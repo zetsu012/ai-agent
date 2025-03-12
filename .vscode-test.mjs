@@ -1,19 +1,14 @@
-/**
- * See: https://code.visualstudio.com/api/working-with-extensions/testing-extension
- */
-
-import { defineConfig } from '@vscode/test-cli';
+import { defineConfig } from "@vscode/test-cli"
+import path from "path"
 
 export default defineConfig({
-	label: 'integrationTest',
-	files: 'out-integration/test/**/*.test.js',
-	workspaceFolder: '.',
+	files: "{out/**/*.test.js,src/**/*.test.js}",
 	mocha: {
-		ui: 'tdd',
-		timeout: 60000,
+		ui: "bdd",
+		timeout: 20000, // Maximum time (in ms) that a test can run before failing
 	},
-	launchArgs: [
-		'--enable-proposed-api=CoolCline.coolcline',
-		'--disable-extensions'
-	]
-});
+	workspaceFolder: "test-workspace",
+	version: "stable",
+	extensionDevelopmentPath: path.resolve("./"),
+	launchArgs: ["--disable-extensions"],
+})

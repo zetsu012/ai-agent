@@ -1,10 +1,7 @@
 import { exec } from "child_process"
 import { promisify } from "util"
-import { truncateOutput } from "../integrations/misc/extract-text"
 
 const execAsync = promisify(exec)
-const execWithEncoding = (command: string, options: { cwd?: string } = {}) =>
-	execAsync(command, { ...options, encoding: "utf8" })
 const GIT_OUTPUT_LINE_LIMIT = 500
 
 export interface GitCommit {
@@ -17,7 +14,7 @@ export interface GitCommit {
 
 async function checkGitRepo(cwd: string): Promise<boolean> {
 	try {
-		await execWithEncoding("git rev-parse --git-dir", { cwd })
+		await execAsync("git rev-parse --git-dir", { cwd })
 		return true
 	} catch (error) {
 		return false
@@ -26,7 +23,7 @@ async function checkGitRepo(cwd: string): Promise<boolean> {
 
 async function checkGitInstalled(): Promise<boolean> {
 	try {
-		await execWithEncoding("git --version")
+		await execAsync("git --version")
 		return true
 	} catch (error) {
 		return false
@@ -48,7 +45,7 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 		}
 
 		// Search commits by hash or message, limiting to 10 results
-		const { stdout } = await execWithEncoding(
+		const { stdout } = await execAsync(
 			`git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--grep="${query}" --regexp-ignore-case`,
 			{ cwd },
 		)
@@ -56,7 +53,7 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 		let output = stdout
 		if (!output.trim() && /^[a-f0-9]+$/i.test(query)) {
 			// If no results from grep search and query looks like a hash, try searching by hash
-			const { stdout: hashStdout } = await execWithEncoding(
+			const { stdout: hashStdout } = await execAsync(
 				`git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--author-date-order ${query}`,
 				{ cwd },
 			).catch(() => ({ stdout: "" }))
@@ -104,17 +101,14 @@ export async function getCommitInfo(hash: string, cwd: string): Promise<string> 
 		}
 
 		// Get commit info, stats, and diff separately
-		const { stdout: info } = await execWithEncoding(
-			`git show --format="%H%n%h%n%s%n%an%n%ad%n%b" --no-patch ${hash}`,
-			{
-				cwd,
-			},
-		)
+		const { stdout: info } = await execAsync(`git show --format="%H%n%h%n%s%n%an%n%ad%n%b" --no-patch ${hash}`, {
+			cwd,
+		})
 		const [fullHash, shortHash, subject, author, date, body] = info.trim().split("\n")
 
-		const { stdout: stats } = await execWithEncoding(`git show --stat --format="" ${hash}`, { cwd })
+		const { stdout: stats } = await execAsync(`git show --stat --format="" ${hash}`, { cwd })
 
-		const { stdout: diff } = await execWithEncoding(`git show --format="" ${hash}`, { cwd })
+		const { stdout: diff } = await execAsync(`git show --format="" ${hash}`, { cwd })
 
 		const summary = [
 			`Commit: ${shortHash} (${fullHash})`,
@@ -128,7 +122,7 @@ export async function getCommitInfo(hash: string, cwd: string): Promise<string> 
 		].join("\n")
 
 		const output = summary + "\n\n" + diff.trim()
-		return truncateOutput(output, GIT_OUTPUT_LINE_LIMIT)
+		return truncateOutput(output)
 	} catch (error) {
 		console.error("Error getting commit info:", error)
 		return `Failed to get commit info: ${error instanceof Error ? error.message : String(error)}`
@@ -148,18 +142,36 @@ export async function getWorkingState(cwd: string): Promise<string> {
 		}
 
 		// Get status of working directory
-		const { stdout: status } = await execWithEncoding("git status --short", { cwd })
+		const { stdout: status } = await execAsync("git status --short", { cwd })
 		if (!status.trim()) {
 			return "No changes in working directory"
 		}
 
 		// Get all changes (both staged and unstaged) compared to HEAD
-		const { stdout: diff } = await execWithEncoding("git diff HEAD", { cwd })
-		const lineLimit = GIT_OUTPUT_LINE_LIMIT
+		const { stdout: diff } = await execAsync("git diff HEAD", { cwd })
 		const output = `Working directory changes:\n\n${status}\n\n${diff}`.trim()
-		return truncateOutput(output, lineLimit)
+		return truncateOutput(output)
 	} catch (error) {
 		console.error("Error getting working state:", error)
 		return `Failed to get working state: ${error instanceof Error ? error.message : String(error)}`
 	}
+}
+
+function truncateOutput(content: string): string {
+	if (!GIT_OUTPUT_LINE_LIMIT) {
+		return content
+	}
+
+	const lines = content.split("\n")
+	if (lines.length <= GIT_OUTPUT_LINE_LIMIT) {
+		return content
+	}
+
+	const beforeLimit = Math.floor(GIT_OUTPUT_LINE_LIMIT * 0.2) // 20% of lines before
+	const afterLimit = GIT_OUTPUT_LINE_LIMIT - beforeLimit // remaining 80% after
+	return [
+		...lines.slice(0, beforeLimit),
+		`\n[...${lines.length - GIT_OUTPUT_LINE_LIMIT} lines omitted...]\n`,
+		...lines.slice(-afterLimit),
+	].join("\n")
 }

@@ -26,7 +26,7 @@ Observations:
 - Macos isn't so flexible with mixed separators, whereas windows can handle both. ("Node.js does automatically handle path separators on Windows, converting forward slashes to backslashes as needed. However, on macOS and other Unix-like systems, the path separator is always a forward slash (/), and backslashes are treated as regular characters.")
 */
 
-export function toPosixPath(p: string) {
+function toPosixPath(p: string) {
 	// Extended-Length Paths in Windows start with "\\?\" to allow longer paths and bypass usual parsing. If detected, we return the path unmodified to maintain functionality, as altering these paths could break their special syntax.
 	const isExtendedLengthPath = p.startsWith("\\\\?\\")
 
@@ -58,11 +58,6 @@ export function arePathsEqual(path1?: string, path2?: string): boolean {
 		return false
 	}
 
-	// 解析为绝对路径
-	path1 = path.resolve(path1)
-	path2 = path.resolve(path2)
-
-	// 规范化并比较
 	path1 = normalizePath(path1)
 	path2 = normalizePath(path2)
 
@@ -73,125 +68,34 @@ export function arePathsEqual(path1?: string, path2?: string): boolean {
 }
 
 function normalizePath(p: string): string {
-	// 首先将路径转换为POSIX格式（除了扩展路径）
-	if (!p.startsWith("\\\\?\\")) {
-		p = toPosixPath(p)
+	// normalize resolve ./.. segments, removes duplicate slashes, and standardizes path separators
+	let normalized = path.normalize(p)
+	// however it doesn't remove trailing slashes
+	// remove trailing slash, except for root paths
+	if (normalized.length > 1 && (normalized.endsWith("/") || normalized.endsWith("\\"))) {
+		normalized = normalized.slice(0, -1)
 	}
-
-	// 规范化路径
-	p = path.normalize(p)
-
-	// 移除尾部斜杠（除了根路径）
-	if (p.length > 1 && (p.endsWith("/") || p.endsWith("\\"))) {
-		p = p.slice(0, -1)
-	}
-
-	// 处理Windows驱动器号
-	if (process.platform === "win32" && /^[a-zA-Z]:/.test(p)) {
-		p = p.charAt(0).toLowerCase() + p.slice(1)
-	}
-
-	return p
-}
-
-function normalizeWindowsPath(p: string): string {
-	// 将所有反斜杠转换为正斜杠
-	p = p.replace(/\\/g, "/")
-
-	// 处理Windows驱动器号
-	if (/^[a-zA-Z]:/.test(p)) {
-		p = p.charAt(0).toLowerCase() + p.slice(1)
-	}
-
-	return p
+	return normalized
 }
 
 export function getReadablePath(cwd: string, relPath?: string): string {
-	if (!cwd) {
-		throw new Error("cwd is required")
+	relPath = relPath || ""
+	// path.resolve is flexible in that it will resolve relative paths like '../../' to the cwd and even ignore the cwd if the relPath is actually an absolute path
+	const absolutePath = path.resolve(cwd, relPath)
+	if (arePathsEqual(cwd, path.join(os.homedir(), "Desktop"))) {
+		// User opened vscode without a workspace, so cwd is the Desktop. Show the full absolute path to keep the user aware of where files are being created
+		return absolutePath.toPosix()
 	}
-
-	if (!relPath) {
-		return path.basename(cwd)
+	if (arePathsEqual(path.normalize(absolutePath), path.normalize(cwd))) {
+		return path.basename(absolutePath).toPosix()
+	} else {
+		// show the relative path to the cwd
+		const normalizedRelPath = path.relative(cwd, absolutePath)
+		if (absolutePath.includes(cwd)) {
+			return normalizedRelPath.toPosix()
+		} else {
+			// we are outside the cwd, so show the absolute path (useful for when cline passes in '../../' for example)
+			return absolutePath.toPosix()
+		}
 	}
-
-	// 规范化路径
-	const normalizedCwd = normalizeWindowsPath(path.resolve(cwd))
-	const normalizedPath = normalizeWindowsPath(path.resolve(normalizedCwd, relPath))
-
-	// 如果路径相等，返回目录名
-	if (normalizedCwd === normalizedPath) {
-		return path.basename(normalizedCwd)
-	}
-
-	// 如果是根路径
-	if (cwd === "/") {
-		return normalizeWindowsPath(path.relative(cwd, normalizedPath))
-	}
-
-	// 获取相对路径
-	let relativePath = path.relative(normalizedCwd, normalizedPath)
-
-	// 如果相对路径以 .. 开头，返回绝对路径
-	if (relativePath.startsWith("..")) {
-		return normalizeWindowsPath(normalizedPath)
-	}
-
-	// 转换为POSIX格式
-	relativePath = normalizeWindowsPath(relativePath)
-
-	// 如果路径包含驱动器号，移除它
-	if (/^[a-zA-Z]:/.test(relativePath)) {
-		relativePath = relativePath.slice(relativePath.indexOf("/") + 1)
-	}
-
-	// 如果路径以 Users/ 开头，移除它
-	if (relativePath.startsWith("Users/")) {
-		relativePath = relativePath.slice(relativePath.indexOf("/", 6) + 1)
-	}
-
-	// 保持尾部斜杠
-	if (relPath.endsWith("/") || relPath.endsWith("\\")) {
-		relativePath += "/"
-	}
-
-	return relativePath
-}
-
-export function toRelativePath(filePath: string, cwd: string): string {
-	if (!filePath || !cwd) {
-		return filePath
-	}
-
-	// 规范化路径
-	const normalizedCwd = normalizeWindowsPath(path.resolve(cwd))
-	const normalizedPath = normalizeWindowsPath(path.resolve(filePath))
-
-	// 如果路径相等，返回文件名
-	if (normalizedCwd === normalizedPath) {
-		return path.basename(normalizedPath)
-	}
-
-	// 获取相对路径
-	let relativePath = path.relative(normalizedCwd, normalizedPath)
-
-	// 转换为POSIX格式
-	relativePath = normalizeWindowsPath(relativePath)
-
-	// 如果路径包含驱动器号，移除它
-	if (/^[a-zA-Z]:/.test(relativePath)) {
-		relativePath = relativePath.slice(relativePath.indexOf("/") + 1)
-	}
-
-	// 如果路径以 Users/ 开头，移除它
-	if (relativePath.startsWith("Users/")) {
-		relativePath = relativePath.slice(relativePath.indexOf("/", 6) + 1)
-	}
-
-	// 保持尾部斜杠，但避免重复
-	if ((filePath.endsWith("/") || filePath.endsWith("\\")) && !relativePath.endsWith("/")) {
-		relativePath += "/"
-	}
-
-	return relativePath
 }

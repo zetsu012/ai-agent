@@ -1,26 +1,14 @@
-import { ApiConfiguration, llmProvider } from "./api"
-import { Mode, PromptComponent, ModeConfig } from "./modes"
-import { z } from "zod"
-import { CheckpointRecoveryMode } from "../services/checkpoints/types"
-
-export type PromptMode = Mode | "enhance"
-
-export type AudioType = "notification" | "celebration" | "progress_loop"
+import { ApiConfiguration } from "./api"
+import { AutoApprovalSettings } from "./AutoApprovalSettings"
+import { BrowserSettings } from "./BrowserSettings"
+import { ChatSettings } from "./ChatSettings"
+import { UserInfo } from "./UserInfo"
+import { ChatContent } from "./ChatContent"
+import { TelemetrySetting } from "./TelemetrySetting"
 
 export interface WebviewMessage {
 	type:
 		| "apiConfiguration"
-		| "currentApiConfigName"
-		| "upsertApiConfiguration"
-		| "deleteApiConfiguration"
-		| "loadApiConfiguration"
-		| "renameApiConfiguration"
-		| "getListApiConfiguration"
-		| "customInstructions"
-		| "allowedCommands"
-		| "alwaysAllowReadOnly"
-		| "alwaysAllowWrite"
-		| "alwaysAllowExecute"
 		| "webviewDidLaunch"
 		| "newTask"
 		| "askResponse"
@@ -35,107 +23,73 @@ export interface WebviewMessage {
 		| "requestOllamaModels"
 		| "requestLmStudioModels"
 		| "openImage"
+		| "openInBrowser"
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
-		| "refreshGlamaModels"
 		| "refreshOpenRouterModels"
 		| "refreshOpenAiModels"
-		| "refreshUnboundModels"
-		| "refreshRequestyModels"
-		| "alwaysAllowBrowser"
-		| "alwaysAllowMcp"
-		| "alwaysAllowModeSwitch"
-		| "playSound"
-		| "soundEnabled"
-		| "soundVolume"
-		| "diffEnabled"
-		| "browserViewportSize"
-		| "screenshotQuality"
 		| "openMcpSettings"
 		| "restartMcpServer"
-		| "toggleToolAlwaysAllow"
-		| "toggleMcpServer"
-		| "updateMcpTimeout"
-		| "fuzzyMatchThreshold"
-		| "preferredLanguage"
-		| "writeDelayMs"
-		| "enhancePrompt"
-		| "enhancedPrompt"
-		| "draggedImages"
-		| "deleteMessage"
-		| "terminalOutputLineLimit"
-		| "mcpEnabled"
-		| "enableMcpServerCreation"
-		| "searchCommits"
-		| "alwaysApproveResubmit"
-		| "requestDelaySeconds"
-		| "rateLimitSeconds"
-		| "setApiConfigPassword"
-		| "requestVsCodeLmModels"
-		| "mode"
-		| "updatePrompt"
-		| "updateSupportPrompt"
-		| "resetSupportPrompt"
-		| "getSystemPrompt"
-		| "systemPrompt"
-		| "enhancementApiConfigId"
-		| "updateExperimental"
-		| "autoApprovalEnabled"
-		| "updateCustomMode"
-		| "deleteCustomMode"
-		| "setopenAiCustomModelInfo"
-		| "openCustomModesSettings"
-		| "checkpointsEnabled"
+		| "deleteMcpServer"
+		| "autoApprovalSettings"
+		| "browserSettings"
+		| "togglePlanActMode"
 		| "checkpointDiff"
 		| "checkpointRestore"
-		| "deleteAllProjectsAllHistory"
-		| "deleteThisProjectAllHistory"
+		| "taskCompletionViewChanges"
+		| "openExtensionSettings"
+		| "requestVsCodeLmModels"
+		| "toggleToolAutoApprove"
+		| "toggleMcpServer"
+		| "getLatestState"
+		| "accountLoginClicked"
+		| "accountLogoutClicked"
+		| "authStateChanged"
+		| "authCallback"
+		| "fetchMcpMarketplace"
+		| "downloadMcp"
+		| "silentlyRefreshMcpMarketplace"
+		| "searchCommits"
+		| "showMcpView"
+		| "fetchLatestMcpServersFromHub"
+		| "telemetrySetting"
+		| "openSettings"
+		| "updateMcpTimeout"
+		| "fetchOpenGraphData"
+		| "checkIsImageUrl"
+		| "invoke"
+		| "updateSettings"
+		| "clearAllTaskHistory"
+	// | "relaunchChromeDebugMode"
 	text?: string
 	disabled?: boolean
-	askResponse?: CoolClineAskResponse
+	askResponse?: ClineAskResponse
 	apiConfiguration?: ApiConfiguration
 	images?: string[]
 	bool?: boolean
-	value?: number
-	commands?: string[]
-	audioType?: AudioType
+	number?: number
+	autoApprovalSettings?: AutoApprovalSettings
+	browserSettings?: BrowserSettings
+	chatSettings?: ChatSettings
+	chatContent?: ChatContent
+	mcpId?: string
+	timeout?: number
+	// For toggleToolAutoApprove
 	serverName?: string
 	toolName?: string
-	alwaysAllow?: boolean
-	mode?: Mode
-	promptMode?: PromptMode
-	customPrompt?: PromptComponent
-	dataUrls?: string[]
-	values?: Record<string, any>
-	query?: string
-	slug?: string
-	modeConfig?: ModeConfig
-	timeout?: number
-	payload?: WebViewMessagePayload
+	autoApprove?: boolean
+
+	// For auth
+	user?: UserInfo | null
+	customToken?: string
+	// For openInBrowser
+	url?: string
+	planActSeparateModelsSetting?: boolean
+	telemetrySetting?: TelemetrySetting
+	customInstructionsSetting?: string
 }
 
-export type CoolClineAskResponse = "yesButtonClicked" | "noButtonClicked" | "messageResponse"
+export type ClineAskResponse = "yesButtonClicked" | "noButtonClicked" | "messageResponse"
 
-export const checkoutDiffPayloadSchema = z.object({
-	ts: z.number(),
-	commitHash: z.string(),
-	mode: z.enum(["full", "checkpoint"]),
-})
-
-export type CheckpointDiffPayload = z.infer<typeof checkoutDiffPayloadSchema>
-
-export const checkoutRestorePayloadSchema = z.object({
-	ts: z.number(),
-	commitHash: z.string(),
-	// mode: z.enum(["preview", "restore", "files", "messages", "files_and_messages"]),
-	mode: z.enum([
-		CheckpointRecoveryMode.FILES,
-		CheckpointRecoveryMode.MESSAGES,
-		CheckpointRecoveryMode.FILES_AND_MESSAGES,
-	]),
-})
-
-export type CheckpointRestorePayload = z.infer<typeof checkoutRestorePayloadSchema>
-
-export type WebViewMessagePayload = CheckpointDiffPayload | CheckpointRestorePayload
+export type ClineCheckpointRestore = "task" | "workspace" | "taskAndWorkspace"
