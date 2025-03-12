@@ -1,4 +1,4 @@
-import { CoolClineMessage } from "./ExtensionMessage"
+import { ClineMessage } from "./ExtensionMessage"
 
 interface ApiMetrics {
 	totalTokensIn: number
@@ -6,18 +6,17 @@ interface ApiMetrics {
 	totalCacheWrites?: number
 	totalCacheReads?: number
 	totalCost: number
-	contextTokens: number // Total tokens in conversation (last message's tokensIn + tokensOut + cacheWrites + cacheReads)
 }
 
 /**
- * Calculates API metrics from an array of CoolClineMessages.
+ * Calculates API metrics from an array of ClineMessages.
  *
  * This function processes 'api_req_started' messages that have been combined with their
- * corresponding 'api_req_finished' messages by the combineApiRequests function.
+ * corresponding 'api_req_finished' messages by the combineApiRequests function. It also takes into account 'deleted_api_reqs' messages, which are aggregated from deleted messages.
  * It extracts and sums up the tokensIn, tokensOut, cacheWrites, cacheReads, and cost from these messages.
  *
- * @param messages - An array of CoolClineMessage objects to process.
- * @returns An ApiMetrics object containing totalTokensIn, totalTokensOut, totalCacheWrites, totalCacheReads, totalCost, and contextTokens.
+ * @param messages - An array of ClineMessage objects to process.
+ * @returns An ApiMetrics object containing totalTokensIn, totalTokensOut, totalCacheWrites, totalCacheReads, and totalCost.
  *
  * @example
  * const messages = [
@@ -26,40 +25,20 @@ interface ApiMetrics {
  * const { totalTokensIn, totalTokensOut, totalCost } = getApiMetrics(messages);
  * // Result: { totalTokensIn: 10, totalTokensOut: 20, totalCost: 0.005 }
  */
-export function getApiMetrics(messages: CoolClineMessage[]): ApiMetrics {
+export function getApiMetrics(messages: ClineMessage[]): ApiMetrics {
 	const result: ApiMetrics = {
 		totalTokensIn: 0,
 		totalTokensOut: 0,
 		totalCacheWrites: undefined,
 		totalCacheReads: undefined,
 		totalCost: 0,
-		contextTokens: 0,
 	}
 
-	// Helper function to get total tokens from a message
-	const getTotalTokensFromMessage = (message: CoolClineMessage): number => {
-		if (!message.text) return 0
-		try {
-			const { tokensIn, tokensOut, cacheWrites, cacheReads } = JSON.parse(message.text)
-			return (tokensIn || 0) + (tokensOut || 0) + (cacheWrites || 0) + (cacheReads || 0)
-		} catch {
-			return 0
-		}
-	}
-
-	// Find the last api_req_started message that has any tokens
-	const lastApiReq = [...messages].reverse().find((message) => {
-		if (message.type === "say" && message.say === "api_req_started") {
-			return getTotalTokensFromMessage(message) > 0
-		}
-		return false
-	})
-
-	// Calculate running totals
 	messages.forEach((message) => {
-		if (message.type === "say" && message.say === "api_req_started" && message.text) {
+		if (message.type === "say" && (message.say === "api_req_started" || message.say === "deleted_api_reqs") && message.text) {
 			try {
-				const { tokensIn, tokensOut, cacheWrites, cacheReads, cost } = JSON.parse(message.text)
+				const parsedData = JSON.parse(message.text)
+				const { tokensIn, tokensOut, cacheWrites, cacheReads, cost } = parsedData
 
 				if (typeof tokensIn === "number") {
 					result.totalTokensIn += tokensIn
@@ -75,11 +54,6 @@ export function getApiMetrics(messages: CoolClineMessage[]): ApiMetrics {
 				}
 				if (typeof cost === "number") {
 					result.totalCost += cost
-				}
-
-				// If this is the last api request with tokens, use its total for context size
-				if (message === lastApiReq) {
-					result.contextTokens = getTotalTokensFromMessage(message)
 				}
 			} catch (error) {
 				console.error("Error parsing JSON:", error)

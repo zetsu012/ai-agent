@@ -1,101 +1,39 @@
-# Contributing to CoolCline
+# Contributing to Cline
 
-> README: [English](README.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/README_zh.md) CHANGELOG: [English](CHANGELOG.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CHANGELOG_zh.md) CONTRIBUTING: [English](CONTRIBUTING.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CONTRIBUTING_zh.md)
->
-> Detailed Documentation: [English](docs/user-docs/en/index.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/docs/user-docs/zh/index.md)
+We're thrilled you're interested in contributing to Cline. Whether you're fixing a bug, adding a feature, or improving our docs, every contribution makes Cline smarter! To keep our community vibrant and welcoming, all members must adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-[`CoolCline`](https://github.com/coolcline/coolcline.git) is an agentic coding assistant that combines the best features of [Cline](https://github.com/cline/cline.git), [Roo Cline](https://github.com/RooVetGit/Roo-Code.git) and [Bao Cline](https://github.com/jnorthrup/Bao-Cline.git). Working seamlessly with your **Command Line Interface** and **Editor**, it brings you the most powerful AI development experience. Thanks to all their `CoolClines` contributors!
+## Reporting Bugs or Issues
 
-Thank you for considering contributing to CoolCline! This guide will help you understand how to participate in project development.
+Bug reports help make Cline better for everyone! Before creating a new issue, please [search existing ones](https://github.com/cline/cline/issues) to avoid duplicates. When you're ready to report a bug, head over to our [issues page](https://github.com/cline/cline/issues/new/choose) where you'll find a template to help you with filling out the relevant information.
 
-## Git Workflow
+<blockquote class='warning-note'>
+     🔐 <b>Important:</b> If you discover a security vulnerability, please use the <a href="https://github.com/cline/cline/security/advisories/new">Github security tool to report it privately</a>.
+</blockquote>
 
-We follow the standard `gitflow` workflow (recommended):
+## Deciding What to Work On
 
-Remote and local branches:
+Looking for a good first contribution? Check out issues labeled ["good first issue"](https://github.com/cline/cline/labels/good%20first%20issue) or ["help wanted"](https://github.com/cline/cline/labels/help%20wanted). These are specifically curated for new contributors and areas where we'd love some help!
 
-- `main` branch: Stable release versions
-- `develop` branch: Latest development version
+We also welcome contributions to our [documentation](https://github.com/cline/cline/tree/main/docs)! Whether it's fixing typos, improving existing guides, or creating new educational content - we'd love to build a community-driven repository of resources that helps everyone get the most out of Cline. You can start by diving into `/docs` and looking for areas that need improvement.
 
-Local-only branches:
+If you're planning to work on a bigger feature, please create a [feature request](https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop) first so we can discuss whether it aligns with Cline's vision.
 
-- `feature/*` branches: New feature development
-- `docs/*` branches: Documentation updates
-- `hotfix/*` branches: Bug fixes for main branch
-- `devfix/*` branches: Bug fixes for develop branch
-- `release/*` branches: Release preparation
+## Development Setup
 
-## Fork the `coolcline` Repository
+1. **VS Code Extensions**
 
-- Gitee: [https://gitee.com/coolcline/coolcline.git](https://gitee.com/coolcline/coolcline.git)
-- GitHub: [https://github.com/coolcline/coolcline.git](https://github.com/coolcline/coolcline.git)
+    - When opening the project, VS Code will prompt you to install recommended extensions
+    - These extensions are required for development - please accept all installation prompts
+    - If you dismissed the prompts, you can install them manually from the Extensions panel
 
-Click the `fork` button to fork the repository to your Gitee or GitHub account.
+2. **Local Development**
+    - Run `npm run install:all` to install dependencies
+    - Run `npm run test` to run tests locally
+    - Before submitting PR, run `npm run format:fix` to format your code
 
-## Clone the Repository
+## Writing and Submitting Code
 
-> Note: The develop branch contains the latest version, while the main branch is the release version of the develop branch:
-
-```bash
-# Execute in command line
-# gitee
-git clone https://gitee.com/<your-gitee-username>/coolcline.git
-# github
-git clone https://github.com/<your-github-username>/coolcline.git
-```
-
-## Prepare Development Branch in VSCode:
-
-```bash
-# Execute in command line
-cd coolcline # Enter project directory
-code coolcline # Open project
-
-# Continue in command line or VSCode terminal
-git checkout develop # Switch to develop branch
-git pull origin develop # Pull latest develop branch
-
-# Create branch like: `feature/<your-feature-name>`, `docs/<your-docs-name>`, `hotfix/<your-hotfix-name>`, `devfix/<your-devfix-name>`, `release/<your-release-name>`
-git checkout -b feature/xx develop # Create feature branch from develop
-```
-
-## Setup Development Environment
-
-> bun is currently more popular than npm, we recommend using bun to install dependencies. Note: if you switch to npm, please modify the commands in `package.json`.
-
-1. Install bun
-
-    > If you don't have bun yet, please install it first. bun website: [https://bun.sh/](https://bun.sh/)
-    >
-    > macOS install bun: `curl -fsSL https://bun.sh/install | bash`
-    >
-    > windows install bun: `powershell -c "irm bun.sh/install.ps1 | iex"`
-
-2. Install dependencies (required):
-
-```bash
-# Execute in root directory to install all dependencies
-# 'all' will install dependencies for both root and webview-ui/ directories
-bun run install:all
-```
-
-## Debugging
-
-1. Run tests:
-
-```bash
-# Execute in root directory
-bun run test # Note: not `bun test`
-```
-
-2. Start development environment:
-   Press `F5` (or click `Run` -> `Start Debugging` in VSCode top menu) to launch a new VSCode window with the extension loaded.
-
-    > Note: If you encounter build issues, you may need to install the [esbuild problem matchers extension](https://marketplace.visualstudio.com/items?itemName=connor4312.esbuild-problem-matchers).
-
-## Contributing Guidelines
-
-Anyone can contribute code to CoolCline, but we ask that you follow these guidelines:
+Anyone can contribute code to Cline, but we ask that you follow these guidelines to ensure your contributions can be smoothly integrated:
 
 1. **Keep Pull Requests Focused**
 
@@ -105,38 +43,43 @@ Anyone can contribute code to CoolCline, but we ask that you follow these guidel
 
 2. **Code Quality**
 
-```bash
-    # Before submitting:
-
-    # Execute in root directory to check code style
-    bun run lint # Address any ESLint warnings or errors before submitting
-    # Execute in root directory to format code
-    bun run format # Format code with Prettier
-
-    # Follow TypeScript best practices and maintain type safety
-```
+    - Run `npm run lint` to check code style
+    - Run `npm run format` to automatically format code
+    - All PRs must pass CI checks which include both linting and formatting
+    - Address any ESLint warnings or errors before submitting
+    - Follow TypeScript best practices and maintain type safety
 
 3. **Testing**
 
     - Add tests for new features
-    - Run `bun run test` to ensure all tests pass
+    - Run `npm test` to ensure all tests pass
     - Update existing tests if your changes affect them
     - Include both unit tests and integration tests where appropriate
 
-4. **Commit Guidelines**
+4. **Version Management with Changesets**
+
+    - Create a changeset for any user-facing changes using `npm run changeset`
+    - Choose the appropriate version bump:
+        - `major` for breaking changes (1.0.0 → 2.0.0)
+        - `minor` for new features (1.0.0 → 1.1.0)
+        - `patch` for bug fixes (1.0.0 → 1.0.1)
+    - Write clear, descriptive changeset messages that explain the impact
+    - Documentation-only changes don't require changesets
+
+5. **Commit Guidelines**
 
     - Write clear, descriptive commit messages
-    - Use conventional commit format (e.g., "feat:", "hotfix:", "devfix:", "release:", "docs:")
+    - Use conventional commit format (e.g., "feat:", "fix:", "docs:")
     - Reference relevant issues in commits using #issue-number
 
-5. **Before Submitting**
+6. **Before Submitting**
 
-    - Rebase your branch on the latest develop branch
+    - Rebase your branch on the latest main
     - Ensure your branch builds successfully
-    - Double-check all tests are passing (`bun run test`, note: not `bun test`)
+    - Double-check all tests are passing
     - Review your changes for any debugging code or console logs
 
-6. **Pull Request Description**
+7. **Pull Request Description**
     - Clearly describe what your changes do
     - Include steps to test the changes
     - List any breaking changes
@@ -146,4 +89,4 @@ Anyone can contribute code to CoolCline, but we ask that you follow these guidel
 
 By submitting a pull request, you agree that your contributions will be licensed under the same license as the project ([Apache 2.0](LICENSE)).
 
-Hey: Contributing to CoolCline isn't just about writing code - it's about being part of a community that's shaping the future of AI-assisted development. Let's build something amazing together! 🚀
+Remember: Contributing to Cline isn't just about writing code - it's about being part of a community that's shaping the future of AI-assisted development. Let's build something amazing together! 🚀

@@ -1,33 +1,7 @@
 import { mentionRegex } from "../../../src/shared/context-mentions"
-import { ModeConfig } from "../../../src/shared/modes"
 import { Fzf } from "fzf"
 
-export function insertMention(
-	text: string,
-	position: number,
-	value: string,
-): { newValue: string; mentionIndex: number } {
-	// 处理斜杠命令
-	if (text.startsWith("/")) {
-		const beforeCursor = text.slice(0, position)
-		const afterCursor = text.slice(position)
-		const commandText = beforeCursor.slice(1) // 去掉斜杠
-
-		// 如果命令文本为空或全是空格，直接替换整个命令
-		if (!commandText.trim()) {
-			return {
-				newValue: value,
-				mentionIndex: 0,
-			}
-		}
-
-		// 否则，替换命令部分
-		return {
-			newValue: "/" + value + afterCursor,
-			mentionIndex: value.length + 1, // +1 是为了包含斜杠
-		}
-	}
-
+export function insertMention(text: string, position: number, value: string): { newValue: string; mentionIndex: number } {
 	const beforeCursor = text.slice(0, position)
 	const afterCursor = text.slice(position)
 
@@ -70,14 +44,13 @@ export function removeMention(text: string, position: number): { newText: string
 }
 
 export enum ContextMenuOptionType {
-	OpenedFile = "openedFile",
 	File = "file",
 	Folder = "folder",
 	Problems = "problems",
+	Terminal = "terminal",
 	URL = "url",
 	Git = "git",
 	NoResults = "noResults",
-	Mode = "mode",
 }
 
 export interface ContextMenuQueryItem {
@@ -85,79 +58,26 @@ export interface ContextMenuQueryItem {
 	value?: string
 	label?: string
 	description?: string
-	icon?: string
 }
 
 export function getContextMenuOptions(
 	query: string,
 	selectedType: ContextMenuOptionType | null = null,
 	queryItems: ContextMenuQueryItem[],
-	modes?: ModeConfig[],
 ): ContextMenuQueryItem[] {
-	// 处理斜杠命令模式切换
-	if (query.startsWith("/")) {
-		const modeQuery = query.slice(1).trim()
-		if (!modes?.length) return [{ type: ContextMenuOptionType.NoResults }]
-
-		// 创建可搜索的字符串数组
-		const searchableItems = modes.map((mode) => ({
-			original: mode,
-			searchStr: `${mode.name} ${mode.roleDefinition} ${mode.slug}`,
-		}))
-
-		// 初始化 fzf 实例进行模糊搜索
-		const fzf = new Fzf(searchableItems, {
-			selector: (item) => item.searchStr,
-		})
-
-		// 获取模糊匹配的项目并排序
-		const getMatchingModes = (items: typeof searchableItems) => {
-			const results = modeQuery ? fzf.find(modeQuery) : items.map((item, idx) => ({ item, score: idx }))
-
-			// 自定义排序逻辑
-			return results.sort((a, b) => {
-				// 优先匹配名称
-				const aNameMatch = a.item.original.name.toLowerCase().includes(modeQuery.toLowerCase())
-				const bNameMatch = b.item.original.name.toLowerCase().includes(modeQuery.toLowerCase())
-				if (aNameMatch !== bNameMatch) return aNameMatch ? -1 : 1
-
-				// 其次匹配 slug
-				const aSlugMatch = a.item.original.slug.toLowerCase().includes(modeQuery.toLowerCase())
-				const bSlugMatch = b.item.original.slug.toLowerCase().includes(modeQuery.toLowerCase())
-				if (aSlugMatch !== bSlugMatch) return aSlugMatch ? -1 : 1
-
-				return a.score - b.score
-			})
-		}
-
-		const matchingModes = getMatchingModes(searchableItems).map((result) => ({
-			type: ContextMenuOptionType.Mode as const,
-			value: result.item.original.slug,
-			label: result.item.original.name,
-			description: result.item.original.roleDefinition.split("\n")[0],
-			icon: "$(symbol-enum)", // 添加图标
-		}))
-
-		return matchingModes.length > 0 ? matchingModes : [{ type: ContextMenuOptionType.NoResults }]
-	}
-
 	const workingChanges: ContextMenuQueryItem = {
 		type: ContextMenuOptionType.Git,
 		value: "git-changes",
 		label: "Working changes",
 		description: "Current uncommitted changes",
-		icon: "$(git-commit)",
 	}
 
 	if (query === "") {
 		if (selectedType === ContextMenuOptionType.File) {
 			const files = queryItems
-				.filter(
-					(item) =>
-						item.type === ContextMenuOptionType.File || item.type === ContextMenuOptionType.OpenedFile,
-				)
+				.filter((item) => item.type === ContextMenuOptionType.File)
 				.map((item) => ({
-					type: item.type,
+					type: ContextMenuOptionType.File,
 					value: item.value,
 				}))
 			return files.length > 0 ? files : [{ type: ContextMenuOptionType.NoResults }]
@@ -166,7 +86,10 @@ export function getContextMenuOptions(
 		if (selectedType === ContextMenuOptionType.Folder) {
 			const folders = queryItems
 				.filter((item) => item.type === ContextMenuOptionType.Folder)
-				.map((item) => ({ type: ContextMenuOptionType.Folder, value: item.value }))
+				.map((item) => ({
+					type: ContextMenuOptionType.Folder,
+					value: item.value,
+				}))
 			return folders.length > 0 ? folders : [{ type: ContextMenuOptionType.NoResults }]
 		}
 
@@ -176,11 +99,12 @@ export function getContextMenuOptions(
 		}
 
 		return [
-			{ type: ContextMenuOptionType.Problems },
 			{ type: ContextMenuOptionType.URL },
+			{ type: ContextMenuOptionType.Problems },
+			{ type: ContextMenuOptionType.Terminal },
+			{ type: ContextMenuOptionType.Git },
 			{ type: ContextMenuOptionType.Folder },
 			{ type: ContextMenuOptionType.File },
-			{ type: ContextMenuOptionType.Git },
 		]
 	}
 
@@ -193,7 +117,6 @@ export function getContextMenuOptions(
 			type: ContextMenuOptionType.Git,
 			label: "Git Commits",
 			description: "Search repository history",
-			icon: "$(git-commit)",
 		})
 	} else if ("git-changes".startsWith(lowerQuery)) {
 		suggestions.push(workingChanges)
@@ -219,7 +142,6 @@ export function getContextMenuOptions(
 				value: lowerQuery,
 				label: `Commit ${lowerQuery}`,
 				description: "Git commit hash",
-				icon: "$(git-commit)",
 			})
 		}
 	}
@@ -240,16 +162,12 @@ export function getContextMenuOptions(
 
 	// Separate matches by type
 	const fileMatches = matchingItems.filter(
-		(item) =>
-			item.type === ContextMenuOptionType.File ||
-			item.type === ContextMenuOptionType.OpenedFile ||
-			item.type === ContextMenuOptionType.Folder,
+		(item) => item.type === ContextMenuOptionType.File || item.type === ContextMenuOptionType.Folder,
 	)
 	const gitMatches = matchingItems.filter((item) => item.type === ContextMenuOptionType.Git)
 	const otherMatches = matchingItems.filter(
 		(item) =>
 			item.type !== ContextMenuOptionType.File &&
-			item.type !== ContextMenuOptionType.OpenedFile &&
 			item.type !== ContextMenuOptionType.Folder &&
 			item.type !== ContextMenuOptionType.Git,
 	)
@@ -262,7 +180,9 @@ export function getContextMenuOptions(
 		const seen = new Set()
 		const deduped = allItems.filter((item) => {
 			const key = `${item.type}-${item.value}`
-			if (seen.has(key)) return false
+			if (seen.has(key)) {
+				return false
+			}
 			seen.add(key)
 			return true
 		})
@@ -274,26 +194,29 @@ export function getContextMenuOptions(
 }
 
 export function shouldShowContextMenu(text: string, position: number): boolean {
-	// 处理斜杠命令
-	if (text.startsWith("/")) {
-		return position <= text.length && !text.includes(" ")
-	}
-
 	const beforeCursor = text.slice(0, position)
 	const atIndex = beforeCursor.lastIndexOf("@")
 
-	if (atIndex === -1) return false
+	if (atIndex === -1) {
+		return false
+	}
 
 	const textAfterAt = beforeCursor.slice(atIndex + 1)
 
 	// Check if there's any whitespace after the '@'
-	if (/\s/.test(textAfterAt)) return false
+	if (/\s/.test(textAfterAt)) {
+		return false
+	}
 
 	// Don't show the menu if it's a URL
-	if (textAfterAt.toLowerCase().startsWith("http")) return false
+	if (textAfterAt.toLowerCase().startsWith("http")) {
+		return false
+	}
 
-	// Don't show the menu if it's a problems
-	if (textAfterAt.toLowerCase().startsWith("problems")) return false
+	// Don't show the menu if it's a problems or terminal
+	if (textAfterAt.toLowerCase().startsWith("problems") || textAfterAt.toLowerCase().startsWith("terminal")) {
+		return false
+	}
 
 	// NOTE: it's okay that menu shows when there's trailing punctuation since user could be inputting a path with marks
 

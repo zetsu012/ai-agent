@@ -1,71 +1,197 @@
 import { EventEmitter } from "events"
-import stripAnsi from "strip-ansi"
+import { stripAnsi } from "./ansiUtils"
 import * as vscode from "vscode"
-import { logger } from "../../utils/logging"
 
+export interface TerminalProcessEvents {
+	line: [line: string]
+	continue: []
+	completed: []
+	error: [error: Error]
+	no_shell_integration: []
+}
+
+// how long to wait after a process outputs anything before we consider it "cool" again
 const PROCESS_HOT_TIMEOUT_NORMAL = 2_000
-const PROCESS_HOT_TIMEOUT_COMPILING = 1000 * 60 * 60 // 1小时
+const PROCESS_HOT_TIMEOUT_COMPILING = 15_000
 
-export class TerminalProcess extends EventEmitter {
+export class TerminalProcess extends EventEmitter<TerminalProcessEvents> {
+	waitForShellIntegration: boolean = true
 	private isListening: boolean = true
 	private buffer: string = ""
 	private fullOutput: string = ""
 	private lastRetrievedIndex: number = 0
 	isHot: boolean = false
 	private hotTimer: NodeJS.Timeout | null = null
-	private command: string = ""
-	private outputBuffer: string[] = []
-	private lastPromptIndex: number = -1
-	private static isTestMode: boolean = false
 
-	private static readonly OUTPUT_CHECK_CONFIG = {
-		maxAttempts: 30,
-		intervalMs: 100,
-		minWaitMs: 100,
-		maxWaitMs: 2000,
-		stableCount: 3,
+	// constructor() {
+	// 	super()
+
+	async run(terminal: vscode.Terminal, command: string) {
+		if (terminal.shellIntegration && terminal.shellIntegration.executeCommand) {
+			const execution = terminal.shellIntegration.executeCommand(command)
+			const stream = execution.read()
+			// todo: need to handle errors
+			let isFirstChunk = true
+			let didOutputNonCommand = false
+			let didEmitEmptyLine = false
+			for await (let data of stream) {
+				// 1. Process chunk and remove artifacts
+				if (isFirstChunk) {
+					/*
+					The first chunk we get from this stream needs to be processed to be more human readable, ie remove vscode's custom escape sequences and identifiers, removing duplicate first char bug, etc.
+					*/
+
+					// bug where sometimes the command output makes its way into vscode shell integration metadata
+					/*
+					]633 is a custom sequence number used by VSCode shell integration:
+					- OSC 633 ; A ST - Mark prompt start
+					- OSC 633 ; B ST - Mark prompt end
+					- OSC 633 ; C ST - Mark pre-execution (start of command output)
+					- OSC 633 ; D [; <exitcode>] ST - Mark execution finished with optional exit code
+					- OSC 633 ; E ; <commandline> [; <nonce>] ST - Explicitly set command line with optional nonce
+					*/
+					// if you print this data you might see something like "eecho hello worldo hello world;5ba85d14-e92a-40c4-b2fd-71525581eeb0]633;C" but this is actually just a bunch of escape sequences, ignore up to the first ;C
+					/* ddateb15026-6a64-40db-b21f-2a621a9830f0]633;CTue Sep 17 06:37:04 EDT 2024 % ]633;D;0]633;P;Cwd=/Users/saoud/Repositories/test */
+					// Gets output between ]633;C (command start) and ]633;D (command end)
+					const outputBetweenSequences = this.removeLastLineArtifacts(
+						data.match(/\]633;C([\s\S]*?)\]633;D/)?.[1] || "",
+					).trim()
+
+					// Once we've retrieved any potential output between sequences, we can remove everything up to end of the last sequence
+					// https://code.visualstudio.com/docs/terminal/shell-integration#_vs-code-custom-sequences-osc-633-st
+					const vscodeSequenceRegex = /\x1b\]633;.[^\x07]*\x07/g
+					const lastMatch = [...data.matchAll(vscodeSequenceRegex)].pop()
+					if (lastMatch && lastMatch.index !== undefined) {
+						data = data.slice(lastMatch.index + lastMatch[0].length)
+					}
+					// Place output back after removing vscode sequences
+					if (outputBetweenSequences) {
+						data = outputBetweenSequences + "\n" + data
+					}
+					// remove ansi
+					data = stripAnsi(data)
+					// Split data by newlines
+					let lines = data ? data.split("\n") : []
+					// Remove non-human readable characters from the first line
+					if (lines.length > 0) {
+						lines[0] = lines[0].replace(/[^\x20-\x7E]/g, "")
+					}
+					// Check if first two characters are the same, if so remove the first character
+					if (lines.length > 0 && lines[0].length >= 2 && lines[0][0] === lines[0][1]) {
+						lines[0] = lines[0].slice(1)
+					}
+					// Remove everything up to the first alphanumeric character for first two lines
+					if (lines.length > 0) {
+						lines[0] = lines[0].replace(/^[^a-zA-Z0-9]*/, "")
+					}
+					if (lines.length > 1) {
+						lines[1] = lines[1].replace(/^[^a-zA-Z0-9]*/, "")
+					}
+					// Join lines back
+					data = lines.join("\n")
+					isFirstChunk = false
+				} else {
+					data = stripAnsi(data)
+				}
+
+				// first few chunks could be the command being echoed back, so we must ignore
+				// note this means that 'echo' commands wont work
+				if (!didOutputNonCommand) {
+					const lines = data.split("\n")
+					for (let i = 0; i < lines.length; i++) {
+						if (command.includes(lines[i].trim())) {
+							lines.splice(i, 1)
+							i-- // Adjust index after removal
+						} else {
+							didOutputNonCommand = true
+							break
+						}
+					}
+					data = lines.join("\n")
+				}
+
+				// FIXME: right now it seems that data chunks returned to us from the shell integration stream contains random commas, which from what I can tell is not the expected behavior. There has to be a better solution here than just removing all commas.
+				data = data.replace(/,/g, "")
+
+				// 2. Set isHot depending on the command
+				// Set to hot to stall API requests until terminal is cool again
+				this.isHot = true
+				if (this.hotTimer) {
+					clearTimeout(this.hotTimer)
+				}
+				// these markers indicate the command is some kind of local dev server recompiling the app, which we want to wait for output of before sending request to cline
+				const compilingMarkers = ["compiling", "building", "bundling", "transpiling", "generating", "starting"]
+				const markerNullifiers = [
+					"compiled",
+					"success",
+					"finish",
+					"complete",
+					"succeed",
+					"done",
+					"end",
+					"stop",
+					"exit",
+					"terminate",
+					"error",
+					"fail",
+				]
+				const isCompiling =
+					compilingMarkers.some((marker) => data.toLowerCase().includes(marker.toLowerCase())) &&
+					!markerNullifiers.some((nullifier) => data.toLowerCase().includes(nullifier.toLowerCase()))
+				this.hotTimer = setTimeout(
+					() => {
+						this.isHot = false
+					},
+					isCompiling ? PROCESS_HOT_TIMEOUT_COMPILING : PROCESS_HOT_TIMEOUT_NORMAL,
+				)
+
+				// For non-immediately returning commands we want to show loading spinner right away but this wouldnt happen until it emits a line break, so as soon as we get any output we emit "" to let webview know to show spinner
+				if (!didEmitEmptyLine && !this.fullOutput && data) {
+					this.emit("line", "") // empty line to indicate start of command output stream
+					didEmitEmptyLine = true
+				}
+
+				this.fullOutput += data
+				if (this.isListening) {
+					this.emitIfEol(data)
+					this.lastRetrievedIndex = this.fullOutput.length - this.buffer.length
+				}
+			}
+
+			this.emitRemainingBufferIfListening()
+
+			// for now we don't want this delaying requests since we don't send diagnostics automatically anymore (previous: "even though the command is finished, we still want to consider it 'hot' in case so that api request stalls to let diagnostics catch up")
+			if (this.hotTimer) {
+				clearTimeout(this.hotTimer)
+			}
+			this.isHot = false
+
+			this.emit("completed")
+			this.emit("continue")
+		} else {
+			terminal.sendText(command, true)
+			// For terminals without shell integration, we can't know when the command completes
+			// So we'll just emit the continue event after a delay
+			this.emit("completed")
+			this.emit("continue")
+			this.emit("no_shell_integration")
+			// setTimeout(() => {
+			// 	console.log(`Emitting continue after delay for terminal`)
+			// 	// can't emit completed since we don't if the command actually completed, it could still be running server
+			// }, 500) // Adjust this delay as needed
+		}
 	}
 
-	private static readonly SHELL_PROMPTS = {
-		zsh: ["%", "$", "➜", "❯"],
-		bash: ["$", "#", "@", "❯"],
-		fish: ["›", "$", "❯", "→"],
-		powershell: [">", "PS>", "PS❯", "PWD>"],
-		cmd: [">", "C:\\>", "D:\\>"],
-		generic: ["$", ">", "#", "❯", "→", "➜"],
-	}
-
-	private static readonly MAX_OUTPUT_LENGTH = 1000000
-	private static readonly MAX_OUTPUT_PREVIEW_LENGTH = 100000
-
-	// 不同终端类型的提示符正则
-	private readonly PROMPT_PATTERNS = {
-		// Unix-like (bash/zsh)
-		bash: /^[\w-]+@[\w-]+[^%$#>]+[$#>]/, // username@hostname path $
-		zsh: /^[\w-]+@[\w-]+[^%$#>]+[%$#>]/, // username@hostname path %
-		bashBracket: /^\[[\w-]+@[\w-]+[^\]]+\][$#>]/, // [username@hostname path]$
-		bashSimple: /^-(?:bash|zsh)-[\d.]+[$#>]/, // -bash-3.2$ 或 -zsh-5.8$
-		ohmyzsh: /^➜\s+[^$#%>]*/, // oh-my-zsh theme
-		starship: /^[^>]*[❯→➜]/, // starship prompt
-
-		// Windows
-		cmd: /^[A-Z]:\\[^>]+>/, // C:\path>
-		cmdSimple: /^[^>]+>/, // path>
-		powershell: /^PS\s+[A-Z]:\\[^>]+>/, // PS C:\path>
-		powershellSimple: /^PS>/, // PS>
-
-		// 通用格式
-		simple: /^[%$#>]\s*/, // 简单提示符
-		git: /^[\w-]+@[\w-]+[^(]+\([\w-/]+\)[$#>]/, // git branch in prompt
-		time: /^\[\d{2}:\d{2}:\d{2}\][$#>]/, // time in prompt
-	}
-
-	// 为测试添加的方法
+	// Inspired by https://github.com/sindresorhus/execa/blob/main/lib/transform/split.js
 	private emitIfEol(chunk: string) {
 		this.buffer += chunk
 		let lineEndIndex: number
 		while ((lineEndIndex = this.buffer.indexOf("\n")) !== -1) {
-			let line = this.buffer.slice(0, lineEndIndex).trimEnd()
+			let line = this.buffer.slice(0, lineEndIndex).trimEnd() // removes trailing \r
+			// Remove \r if present (for Windows-style line endings)
+			// if (line.endsWith("\r")) {
+			// 	line = line.slice(0, -1)
+			// }
 			this.emit("line", line)
 			this.buffer = this.buffer.slice(lineEndIndex + 1)
 		}
@@ -82,15 +208,6 @@ export class TerminalProcess extends EventEmitter {
 		}
 	}
 
-	private removeLastLineArtifacts(output: string): string {
-		const lines = output.trimEnd().split("\n")
-		if (lines.length > 0) {
-			const lastLine = lines[lines.length - 1]
-			lines[lines.length - 1] = lastLine.replace(/[%$#>]\s*$/, "")
-		}
-		return lines.join("\n").trimEnd()
-	}
-
 	continue() {
 		this.emitRemainingBufferIfListening()
 		this.isListening = false
@@ -98,407 +215,38 @@ export class TerminalProcess extends EventEmitter {
 		this.emit("continue")
 	}
 
-	static setTestMode(enabled: boolean) {
-		this.isTestMode = enabled
-	}
-
-	async run(terminal: vscode.Terminal, command: string) {
-		this.command = command
-		this.isHot = true
-		const commandPreview = command.length > 30 ? command.substring(0, 30) + "..." : command
-
-		// 在测试模式下直接返回结果
-		if (TerminalProcess.isTestMode) {
-			this.emit("line", "test output")
-			this.emit("completed")
-			this.emit("continue")
-			this.isHot = false
-			return
-		}
-
-		return new Promise<void>((resolve, reject) => {
-			let timeoutId: NodeJS.Timeout | undefined
-			let disposable: vscode.Disposable | undefined
-
-			const cleanup = () => {
-				logger.debug("清理资源", { ctx: "terminal" })
-				if (timeoutId) clearTimeout(timeoutId)
-				if (disposable) disposable.dispose()
-				this.isHot = false
-			}
-
-			try {
-				const shellIntegration = (terminal as any).shellIntegration
-				const hasExecuteCommand = typeof shellIntegration?.executeCommand === "function"
-
-				if (hasExecuteCommand) {
-					logger.debug("使用 shell integration 执行命令", {
-						ctx: "terminal",
-						command: commandPreview,
-					})
-
-					//先启动监听命令输出,再执行命令,防止执行速度太快或慢漏了监听的东西
-					disposable = vscode.window.onDidEndTerminalShellExecution(async (event) => {
-						if (event.execution === execution) {
-							try {
-								logger.debug("命令执行完成", {
-									ctx: "terminal",
-									exitCode: event.exitCode,
-								})
-
-								// 获取最终输出
-								const finalOutput = await this.getTerminalContents()
-								if (finalOutput) {
-									logger.debug("获取到最终输出", {
-										ctx: "terminal",
-										outputLength: finalOutput.length,
-									})
-
-									// 重组命令行（因为终端显示内容时，如果终端宽度窄，命令会被截断，而换行，所有无法找到命令
-
-									// 只处理新的输出部分
-									const lines = finalOutput.split("\n")
-									const commandIndex = lines.findIndex((line) => line.includes(this.command))
-									if (commandIndex !== -1 && commandIndex < lines.length - 1) {
-										const newOutput = lines.slice(commandIndex + 1).join("\n")
-										this.processOutput(newOutput)
-									}
-								}
-
-								// 命令执行完成
-								this.emit("completed")
-								this.emit("continue")
-								cleanup()
-								resolve()
-							} catch (error) {
-								logger.error("处理命令输出时发生错误", {
-									ctx: "terminal",
-									error: error instanceof Error ? error : new Error(String(error)),
-								})
-								cleanup()
-								reject(error)
-							}
-						}
-					})
-
-					// 再执行命令
-					const execution = shellIntegration.executeCommand(command)
-
-					// 设置超时（在测试模式下禁用）
-					if (!TerminalProcess.isTestMode) {
-						timeoutId = setTimeout(() => {
-							logger.warn("命令执行超时", {
-								ctx: "terminal",
-								command: commandPreview,
-							})
-							cleanup()
-							reject(new Error("Command execution timeout"))
-						}, PROCESS_HOT_TIMEOUT_COMPILING)
-					}
-				} else {
-					// 使用传统方式
-					logger.debug("使用传统方式执行命令", {
-						ctx: "terminal",
-						command: commandPreview,
-					})
-
-					// 触发 no_shell_integration 事件
-					this.emit("no_shell_integration")
-
-					this.fullOutput = ""
-					this.buffer = ""
-					this.outputBuffer = []
-
-					// 发送命令
-					terminal.sendText(command, true)
-
-					// 设置较短的超时时间（在测试模式下禁用）
-					if (!TerminalProcess.isTestMode) {
-						timeoutId = setTimeout(() => {
-							logger.warn("传统方式执行超时", {
-								ctx: "terminal",
-								command: commandPreview,
-							})
-							cleanup()
-							reject(new Error("Command execution timeout"))
-						}, PROCESS_HOT_TIMEOUT_COMPILING)
-					}
-
-					// 等待命令完成
-					this.waitForCommandCompletion()
-						.then((output) => {
-							if (output) {
-								if (output.length > TerminalProcess.MAX_OUTPUT_LENGTH) {
-									logger.warn("命令输出超过限制", {
-										ctx: "terminal",
-										length: output.length,
-										limit: TerminalProcess.MAX_OUTPUT_LENGTH,
-									})
-
-									const truncatedOutput =
-										output.substring(0, TerminalProcess.MAX_OUTPUT_PREVIEW_LENGTH) +
-										"\n\n... [输出内容过长，已截断。建议使用其他工具查看完整输出，" +
-										"比如将输出重定向到文件：command > output.txt]"
-
-									this.emit("line", "")
-									this.emit("line", truncatedOutput)
-								} else {
-									this.emit("line", "")
-									this.processOutput(output)
-								}
-							}
-
-							this.emit("completed")
-							this.emit("continue")
-							cleanup()
-							resolve()
-						})
-						.catch((error) => {
-							cleanup()
-							reject(error)
-						})
-				}
-			} catch (error) {
-				logger.error("命令执行失败", {
-					ctx: "terminal",
-					error: error instanceof Error ? error : new Error(String(error)),
-				})
-				cleanup()
-				reject(error instanceof Error ? error : new Error(String(error)))
-			}
-		})
-	}
-
-	private processOutput(output: string) {
-		logger.debug("开始处理终端输出", {
-			ctx: "terminal",
-			outputLength: output.length,
-		})
-
-		// 移除 ANSI 转义序列
-		const cleanOutput = stripAnsi(output)
-
-		// 处理输出内容
-		const lines = this.processTerminalOutput(cleanOutput)
-		if (!lines || lines.length === 0) {
-			return
-		}
-
-		// 更新完整输出
-		this.fullOutput += lines.join("\n") + "\n"
-
-		// 发送每一行
-		for (const line of lines) {
-			this.emit("line", line)
-		}
-	}
-
-	/**
-	 * 处理终端输出
-	 * 考虑到了前后无效内容，前有无效回显，后有无效空行
-	 */
-	private processTerminalOutput(fullOutput: string): string[] | null {
-		// 1. 去掉尾部空行
-		let lines = this.removeTrailingEmptyLines(fullOutput)
-		if (lines.length === 0) {
-			return null
-		}
-
-		// 2. 处理每一行，移除控制字符等
-		lines = lines.map((line) => {
-			return this.cleanTerminalLine(line)
-		})
-
-		// 3. 过滤不需要的行
-		lines = this.filterOutputLines(lines)
-
-		return lines.length > 0 ? lines : null
-	}
-
-	/**
-	 * 清理终端行内容
-	 */
-	private cleanTerminalLine(line: string): string {
-		return line
-			.replace(/\[(\?2004[hl]|K)\]/g, "") // 移除终端控制序列
-			.replace(/\]633;[^]*?\\/g, "") // 移除 shell integration 序列
-			.replace(/\x1B\[[0-9;]*[JKmsu]/g, "") // 移除 ANSI 颜色和控制字符
-			.replace(/^n/, "") // 移除开头的 n
-			.replace(/\r/g, "") // 移除回车符
-			.trim()
-	}
-
-	/**
-	 * 过滤输出行
-	 */
-	private filterOutputLines(lines: string[]): string[] {
-		return lines.filter((line) => {
-			// 空行过滤
-			if (!line) return false
-
-			// 控制序列过滤
-			if (line.startsWith(";")) return false
-			if (line.includes("633;")) return false
-
-			// 提示符过滤
-			if (this.isPromptLine(line)) return false
-
-			// 命令本身过滤
-			if (line === this.command) return false
-
-			// 其他特殊字符过滤
-			if (/^\x1b[\[\(].*[\)\]]$/.test(line)) return false // 控制序列
-			if (/^[\x00-\x1F\x7F]+$/.test(line)) return false // 不可打印字符
-
-			return true
-		})
-	}
-
-	/**
-	 * 检查是否是提示符行
-	 */
-	private isPromptLine(line: string): boolean {
-		return Object.values(this.PROMPT_PATTERNS).some((pattern) => pattern.test(line))
-	}
-
-	/**
-	 * 从终端输出中提取提示符
-	 */
-	private extractPromptText(promptLine: string): string {
-		let promptText = ""
-		Object.values(this.PROMPT_PATTERNS).find((pattern) => {
-			const match = promptLine.match(pattern)
-			if (match) {
-				promptText = match[0]
-				return true
-			}
-			return false
-		})
-		return promptText
-	}
-
-	/**
-	 * 去掉尾部空行
-	 */
-	private removeTrailingEmptyLines(fullOutput: string): string[] {
-		let lines = fullOutput.split("\n")
-		while (lines.length > 0 && lines[lines.length - 1].trim() === "") {
-			lines.pop()
-		}
-		return lines
-	}
-
-	private async waitForCommandCompletion(): Promise<string> {
-		// 在测试模式下立即返回
-		if (TerminalProcess.isTestMode) {
-			return "test output"
-		}
-
-		const config = TerminalProcess.OUTPUT_CHECK_CONFIG
-		let lastOutput = ""
-		let stableCount = 0
-		let attempt = 0
-
-		while (attempt < config.maxAttempts) {
-			attempt++
-			await new Promise((resolve) => setTimeout(resolve, config.intervalMs))
-
-			const currentOutput = await this.getTerminalContents()
-
-			// 提取实际的命令输出
-			let processedOutput = currentOutput
-			if (currentOutput) {
-				// 重组命令行（因为终端显示内容时，如果终端宽度窄，命令会被截断，而换行，所有无法找到命令
-
-				//
-				const lines = currentOutput.split("\n")
-				const commandIndex = lines.findIndex((line) => line.includes(this.command))
-				if (commandIndex !== -1 && commandIndex < lines.length - 1) {
-					processedOutput = lines.slice(commandIndex + 1).join("\n")
-				}
-			}
-
-			if (processedOutput === lastOutput) {
-				stableCount++
-				if (stableCount >= config.stableCount) {
-					logger.debug("检测到提示符，命令执行完成", {
-						ctx: "terminal",
-						attempt,
-					})
-					return processedOutput
-				}
-			} else {
-				stableCount = 0
-				lastOutput = processedOutput
-			}
-		}
-
-		logger.warn("命令执行超时", {
-			ctx: "terminal",
-			attempts: attempt,
-		})
-
-		return lastOutput
-	}
-
-	private async getTerminalContents(): Promise<string> {
-		try {
-			// 保存原始剪贴板内容
-			const originalClipboard = await vscode.env.clipboard.readText()
-
-			// 清除当前选择
-			await vscode.commands.executeCommand("workbench.action.terminal.clearSelection")
-
-			// 选择到上一个命令
-			await vscode.commands.executeCommand("workbench.action.terminal.selectToPreviousCommand")
-
-			// 复制选中内容
-			await vscode.commands.executeCommand("workbench.action.terminal.copySelection")
-
-			// 获取复制的内容
-			const clipboardContent = await vscode.env.clipboard.readText()
-
-			// 恢复原始剪贴板内容
-			await vscode.env.clipboard.writeText(originalClipboard)
-
-			// 清除选择
-			await vscode.commands.executeCommand("workbench.action.terminal.clearSelection")
-
-			return clipboardContent
-		} catch (error) {
-			logger.error("获取终端内容失败", {
-				ctx: "terminal",
-				error: error instanceof Error ? error : new Error(String(error)),
-			})
-			return ""
-		}
-	}
-
 	getUnretrievedOutput(): string {
-		const output = this.fullOutput.slice(this.lastRetrievedIndex)
+		const unretrieved = this.fullOutput.slice(this.lastRetrievedIndex)
 		this.lastRetrievedIndex = this.fullOutput.length
-		return output
+		return this.removeLastLineArtifacts(unretrieved)
+	}
+
+	// some processing to remove artifacts like '%' at the end of the buffer (it seems that since vsode uses % at the beginning of newlines in terminal, it makes its way into the stream)
+	// This modification will remove '%', '$', '#', or '>' followed by optional whitespace
+	removeLastLineArtifacts(output: string) {
+		const lines = output.trimEnd().split("\n")
+		if (lines.length > 0) {
+			const lastLine = lines[lines.length - 1]
+			// Remove prompt characters and trailing whitespace from the last line
+			lines[lines.length - 1] = lastLine.replace(/[%$#>]\s*$/, "")
+		}
+		return lines.join("\n").trimEnd()
 	}
 }
 
-export type TerminalProcessResultPromise = Promise<void> & {
-	on: (event: string, listener: (...args: any[]) => void) => TerminalProcessResultPromise
-	once: (event: string, listener: (...args: any[]) => void) => TerminalProcessResultPromise
-	continue: () => void
-}
+export type TerminalProcessResultPromise = TerminalProcess & Promise<void>
 
+// Similar to execa's ResultPromise, this lets us create a mixin of both a TerminalProcess and a Promise: https://github.com/sindresorhus/execa/blob/main/lib/methods/promise.js
 export function mergePromise(process: TerminalProcess, promise: Promise<void>): TerminalProcessResultPromise {
-	const resultPromise = promise as TerminalProcessResultPromise
-	resultPromise.on = (event: string, listener: (...args: any[]) => void) => {
-		process.on(event, listener)
-		return resultPromise
+	const nativePromisePrototype = (async () => {})().constructor.prototype
+	const descriptors = ["then", "catch", "finally"].map(
+		(property) => [property, Reflect.getOwnPropertyDescriptor(nativePromisePrototype, property)] as const,
+	)
+	for (const [property, descriptor] of descriptors) {
+		if (descriptor) {
+			const value = descriptor.value.bind(promise)
+			Reflect.defineProperty(process, property, { ...descriptor, value })
+		}
 	}
-	resultPromise.once = (event: string, listener: (...args: any[]) => void) => {
-		process.once(event, listener)
-		return resultPromise
-	}
-	resultPromise.continue = () => {
-		process.emit("continue")
-	}
-	return resultPromise
+	return process as TerminalProcessResultPromise
 }

@@ -1,7 +1,5 @@
 import * as vscode from "vscode"
 import { userInfo } from "os"
-import os from "os"
-import osName from "os-name"
 
 const SHELL_PATHS = {
 	// Windows paths
@@ -147,7 +145,7 @@ function getLinuxShellFromVSCode(): string | null {
 // -----------------------------------------------------
 
 /**
- * Tries to get a user's shell from os.userInfo() (works on Unix if the
+ * Tries to get a user’s shell from os.userInfo() (works on Unix if the
  * underlying system call is supported). Returns null on error or if not found.
  */
 function getShellFromUserInfo(): string | null {
@@ -226,43 +224,4 @@ export function getShell(): string {
 	}
 	// On macOS/Linux, fallback to a POSIX shell - This is the behavior of our old shell detection method.
 	return SHELL_PATHS.FALLBACK
-}
-
-// -----------------------------------------------------
-// 5) System Information Retrieval
-// -----------------------------------------------------
-
-/**
- * 获取系统信息，优先使用VSCode API，提供更健壮的跨平台支持
- * 返回格式与旧实现保持一致，以保持向后兼容性
- */
-export function getSystemInfo(): { os: string; shell: string; homeDir: string } {
-	// 获取操作系统信息
-	let osInfo = ""
-	try {
-		osInfo = osName()
-	} catch (error) {
-		// 如果osName()失败，使用Node.js内置方法
-		const platform = os.platform()
-		const release = os.release()
-		osInfo = `${platform} ${release}`
-	}
-
-	// 获取shell信息
-	const shellPath = getShell()
-
-	// 获取home目录
-	let homeDirPath = ""
-	try {
-		homeDirPath = os.homedir()
-	} catch (error) {
-		// 如果os.homedir()失败，尝试从环境变量获取
-		homeDirPath = process.env.HOME || process.env.USERPROFILE || ""
-	}
-
-	return {
-		os: osInfo,
-		shell: shellPath,
-		homeDir: homeDirPath,
-	}
 }

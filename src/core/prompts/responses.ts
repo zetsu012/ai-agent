@@ -1,17 +1,15 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import * as diff from "diff"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
+import * as path from "path"
+import { ClineIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/ClineIgnoreController"
 
 export const formatResponse = {
 	toolDenied: () => `The user denied this operation.`,
 
-	toolDeniedWithFeedback: (feedback?: string) =>
-		`The user denied this operation and provided the following feedback:\n<feedback>\n${feedback}\n</feedback>`,
-
-	toolApprovedWithFeedback: (feedback?: string) =>
-		`The user approved this operation and provided the following context:\n<feedback>\n${feedback}\n</feedback>`,
-
 	toolError: (error?: string) => `The tool execution failed with the following error:\n<error>\n${error}\n</error>`,
+
+	clineIgnoreError: (path: string) =>
+		`Access to ${path} is blocked by the .clineignore file settings. You must try to continue in the task without using this file, or ask the user to update the .clineignore file.`,
 
 	noToolsUsed: () =>
 		`[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
@@ -34,10 +32,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
 		`Invalid JSON argument used with ${serverName} for ${toolName}. Please retry with a properly formatted JSON argument.`,
 
-	toolResult: (
-		text: string,
-		images?: string[],
-	): string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> => {
+	toolResult: (text: string, images?: string[]): string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> => {
 		if (images && images.length > 0) {
 			const textBlock: Anthropic.TextBlockParam = { type: "text", text }
 			const imageBlocks: Anthropic.ImageBlockParam[] = formatImagesIntoBlocks(images)
@@ -52,14 +47,19 @@ Otherwise, if you have not completed the task and do not need additional informa
 		return formatImagesIntoBlocks(images)
 	},
 
-	formatFilesList: (absolutePath: string, files: string[], didHitLimit: boolean): string => {
+	formatFilesList: (
+		absolutePath: string,
+		files: string[],
+		didHitLimit: boolean,
+		clineIgnoreController?: ClineIgnoreController,
+	): string => {
 		const sorted = files
 			.map((file) => {
 				// convert absolute path to relative path
-				const relativePath = PathUtils.relativePath(absolutePath, file).toPosix()
+				const relativePath = path.relative(absolutePath, file).toPosix()
 				return file.endsWith("/") ? relativePath + "/" : relativePath
 			})
-			// Sort so files are listed under their respective directories to make it clear what files are children of what directories. Since we build file list top down, even if file list is truncated it will show directories that coolcline can then explore further.
+			// Sort so files are listed under their respective directories to make it clear what files are children of what directories. Since we build file list top down, even if file list is truncated it will show directories that cline can then explore further.
 			.sort((a, b) => {
 				const aParts = a.split("/") // only works if we use toPosix first
 				const bParts = b.split("/")
@@ -73,21 +73,40 @@ Otherwise, if you have not completed the task and do not need additional informa
 							return 1
 						}
 						// Otherwise, sort alphabetically
-						return aParts[i].localeCompare(bParts[i], undefined, { numeric: true, sensitivity: "base" })
+						return aParts[i].localeCompare(bParts[i], undefined, {
+							numeric: true,
+							sensitivity: "base",
+						})
 					}
 				}
 				// If all parts are the same up to the length of the shorter path,
 				// the shorter one comes first
 				return aParts.length - bParts.length
 			})
+
+		const clineIgnoreParsed = clineIgnoreController
+			? sorted.map((filePath) => {
+					// path is relative to absolute path, not cwd
+					// validateAccess expects either path relative to cwd or absolute path
+					// otherwise, for validating against ignore patterns like "assets/icons", we would end up with just "icons", which would result in the path not being ignored.
+					const absoluteFilePath = path.resolve(absolutePath, filePath)
+					const isIgnored = !clineIgnoreController.validateAccess(absoluteFilePath)
+					if (isIgnored) {
+						return LOCK_TEXT_SYMBOL + " " + filePath
+					}
+
+					return filePath
+				})
+			: sorted
+
 		if (didHitLimit) {
-			return `${sorted.join(
+			return `${clineIgnoreParsed.join(
 				"\n",
 			)}\n\n(File list truncated. Use list_files on specific subdirectories if you need to explore further.)`
-		} else if (sorted.length === 0 || (sorted.length === 1 && sorted[0] === "")) {
+		} else if (clineIgnoreParsed.length === 0 || (clineIgnoreParsed.length === 1 && clineIgnoreParsed[0] === "")) {
 			return "No files found."
 		} else {
-			return sorted.join("\n")
+			return clineIgnoreParsed.join("\n")
 		}
 	},
 
@@ -109,7 +128,11 @@ const formatImagesIntoBlocks = (images?: string[]): Anthropic.ImageBlockParam[] 
 				const mimeType = rest.split(":")[1].split(";")[0]
 				return {
 					type: "image",
-					source: { type: "base64", media_type: mimeType, data: base64 },
+					source: {
+						type: "base64",
+						media_type: mimeType,
+						data: base64,
+					},
 				} as Anthropic.ImageBlockParam
 			})
 		: []

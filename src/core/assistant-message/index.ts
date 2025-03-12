@@ -12,9 +12,7 @@ export const toolUseNames = [
 	"execute_command",
 	"read_file",
 	"write_to_file",
-	"apply_diff",
-	"insert_content",
-	"search_and_replace",
+	"replace_in_file",
 	"search_files",
 	"list_files",
 	"list_code_definition_names",
@@ -22,9 +20,8 @@ export const toolUseNames = [
 	"use_mcp_tool",
 	"access_mcp_resource",
 	"ask_followup_question",
+	"plan_mode_response",
 	"attempt_completion",
-	"switch_mode",
-	"new_task",
 ] as const
 
 // Converts array of tool call names into a union type ("execute_command" | "read_file" | ...)
@@ -32,9 +29,10 @@ export type ToolUseName = (typeof toolUseNames)[number]
 
 export const toolParamNames = [
 	"command",
+	"requires_approval",
 	"path",
 	"content",
-	"line_count",
+	"diff",
 	"regex",
 	"file_pattern",
 	"recursive",
@@ -47,15 +45,8 @@ export const toolParamNames = [
 	"arguments",
 	"uri",
 	"question",
+	"response",
 	"result",
-	"diff",
-	"start_line",
-	"end_line",
-	"mode_slug",
-	"reason",
-	"operations",
-	"mode",
-	"message",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -71,7 +62,7 @@ export interface ToolUse {
 export interface ExecuteCommandToolUse extends ToolUse {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
-	params: Partial<Pick<Record<ToolParamName, string>, "command">>
+	params: Partial<Pick<Record<ToolParamName, string>, "command" | "requires_approval">>
 }
 
 export interface ReadFileToolUse extends ToolUse {
@@ -81,12 +72,12 @@ export interface ReadFileToolUse extends ToolUse {
 
 export interface WriteToFileToolUse extends ToolUse {
 	name: "write_to_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "line_count">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
 }
 
-export interface InsertCodeBlockToolUse extends ToolUse {
-	name: "insert_content"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "operations">>
+export interface ReplaceInFileToolUse extends ToolUse {
+	name: "replace_in_file"
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "diff">>
 }
 
 export interface SearchFilesToolUse extends ToolUse {
@@ -127,14 +118,4 @@ export interface AskFollowupQuestionToolUse extends ToolUse {
 export interface AttemptCompletionToolUse extends ToolUse {
 	name: "attempt_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result" | "command">>
-}
-
-export interface SwitchModeToolUse extends ToolUse {
-	name: "switch_mode"
-	params: Partial<Pick<Record<ToolParamName, string>, "mode_slug" | "reason">>
-}
-
-export interface NewTaskToolUse extends ToolUse {
-	name: "new_task"
-	params: Partial<Pick<Record<ToolParamName, string>, "mode" | "message">>
 }

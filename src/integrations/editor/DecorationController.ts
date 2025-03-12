@@ -1,37 +1,36 @@
 import * as vscode from "vscode"
 
+const fadedOverlayDecorationType = vscode.window.createTextEditorDecorationType({
+	backgroundColor: "rgba(255, 255, 0, 0.1)",
+	opacity: "0.4",
+	isWholeLine: true,
+})
+
+const activeLineDecorationType = vscode.window.createTextEditorDecorationType({
+	backgroundColor: "rgba(255, 255, 0, 0.3)",
+	opacity: "1",
+	isWholeLine: true,
+	border: "1px solid rgba(255, 255, 0, 0.5)",
+})
+
+type DecorationType = "fadedOverlay" | "activeLine"
+
 export class DecorationController {
-	private fadedOverlayDecorationType: vscode.TextEditorDecorationType
-	private activeLineDecorationType: vscode.TextEditorDecorationType
-	private decorationType: "fadedOverlay" | "activeLine"
+	private decorationType: DecorationType
 	private editor: vscode.TextEditor
 	private ranges: vscode.Range[] = []
 
-	constructor(decorationType: "fadedOverlay" | "activeLine", editor: vscode.TextEditor) {
+	constructor(decorationType: DecorationType, editor: vscode.TextEditor) {
 		this.decorationType = decorationType
 		this.editor = editor
-
-		// 创建装饰类型
-		this.fadedOverlayDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "rgba(255, 255, 0, 0.1)",
-			opacity: "0.4",
-			isWholeLine: true,
-		})
-
-		this.activeLineDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "rgba(255, 255, 0, 0.3)",
-			opacity: "1",
-			isWholeLine: true,
-			border: "1px solid rgba(255, 255, 0, 0.5)",
-		})
 	}
 
 	getDecoration() {
 		switch (this.decorationType) {
 			case "fadedOverlay":
-				return this.fadedOverlayDecorationType
+				return fadedOverlayDecorationType
 			case "activeLine":
-				return this.activeLineDecorationType
+				return activeLineDecorationType
 		}
 	}
 
@@ -64,10 +63,7 @@ export class DecorationController {
 		// Add a new range for all lines after the current line
 		if (line < totalLines - 1) {
 			this.ranges.push(
-				new vscode.Range(
-					new vscode.Position(line + 1, 0),
-					new vscode.Position(totalLines - 1, Number.MAX_SAFE_INTEGER),
-				),
+				new vscode.Range(new vscode.Position(line + 1, 0), new vscode.Position(totalLines - 1, Number.MAX_SAFE_INTEGER)),
 			)
 		}
 

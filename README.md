@@ -1,270 +1,190 @@
-# CoolCline
+<div align="center"><sub>
+English | <a href="https://github.com/cline/cline/blob/main/locales/es/README.md" target="_blank">Español</a> | <a href="https://github.com/cline/cline/blob/main/locales/de/README.md" target="_blank">Deutsch</a> | <a href="https://github.com/cline/cline/blob/main/locales/ja/README.md" target="_blank">日本語</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-cn/README.md" target="_blank">简体中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-tw/README.md" target="_blank">繁體中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/ko/README.md" target="_blank">한국어</a>
+</sub></div>
 
-> README: [English](README.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/README_zh.md) CHANGELOG: [English](CHANGELOG.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CHANGELOG_zh.md) CONTRIBUTING: [English](CONTRIBUTING.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CONTRIBUTING_zh.md)
->
-> Detailed Documentation: [English](docs/user-docs/en/index.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/docs/user-docs/zh/index.md)
+# Cline – \#1 on OpenRouter
 
----
+<p align="center">
+  <img src="https://media.githubusercontent.com/media/cline/cline/main/assets/docs/demo.gif" width="100%" />
+</p>
 
-[CoolCline](https://gitee.com/coolcline/coolcline.git) is a proactive programming assistant that combines the best features of `Cline` and `Roo Code`, offering the following modes:
+<div align="center">
+<table>
+<tbody>
+<td align="center">
+<a href="https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev" target="_blank"><strong>Download on VS Marketplace</strong></a>
+</td>
+<td align="center">
+<a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>
+</td>
+<td align="center">
+<a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
+</td>
+<td align="center">
+<a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>Feature Requests</strong></a>
+</td>
+<td align="center">
+<a href="https://docs.cline.bot/getting-started/getting-started-new-coders" target="_blank"><strong>Getting Started</strong></a>
+</td>
+</tbody>
+</table>
+</div>
 
-- `Agent` Mode: An autonomous AI programming agent with comprehensive capabilities in code understanding, generation, and project management (automatic code reading/editing, command execution, context understanding, task analysis/decomposition, and tool usage, note: this mode is not affected by the checkboxes in the auto-approval area)
-- `Code` Mode: Helps you write, refactor, fix code and run commands (write code, execute commands)
-- `Architect` Mode: Suitable for high-level technical design and system architecture discussions (this mode cannot write code or execute commands)
-- `Ask` Mode: Suitable for codebase-related questions and concept exploration (this mode cannot write code or execute commands)
+Meet Cline, an AI assistant that can use your **CLI** a**N**d **E**ditor.
 
----
+Thanks to [Claude 3.7 Sonnet's agentic coding capabilities](https://www.anthropic.com/claude/sonnet), Cline can handle complex software development tasks step-by-step. With tools that let him create & edit files, explore large projects, use the browser, and execute terminal commands (after you grant permission), he can assist you in ways that go beyond code completion or tech support. Cline can even use the Model Context Protocol (MCP) to create new tools and extend his own capabilities. While autonomous AI scripts traditionally run in sandboxed environments, this extension provides a human-in-the-loop GUI to approve every file change and terminal command, providing a safe and accessible way to explore the potential of agentic AI.
 
-## Getting Started
+1. Enter your task and add images to convert mockups into functional apps or fix bugs with screenshots.
+2. Cline starts by analyzing your file structure & source code ASTs, running regex searches, and reading relevant files to get up to speed in existing projects. By carefully managing what information is added to context, Cline can provide valuable assistance even for large, complex projects without overwhelming the context window.
+3. Once Cline has the information he needs, he can:
+    - Create and edit files + monitor linter/compiler errors along the way, letting him proactively fix issues like missing imports and syntax errors on his own.
+    - Execute commands directly in your terminal and monitor their output as he works, letting him e.g., react to dev server issues after editing a file.
+    - For web development tasks, Cline can launch the site in a headless browser, click, type, scroll, and capture screenshots + console logs, allowing him to fix runtime errors and visual bugs.
+4. When a task is completed, Cline will present the result to you with a terminal command like `open -a "Google Chrome" index.html`, which you run with a click of a button.
 
-### Install VSCode Extension
-
-- Search for `CoolCline` in the VSCode extension marketplace and install
-
-### Configure Language
-
-- If you're installing `CoolCline` for the first time or clicked the `Reset` button at the bottom of the `Settings`⚙️ page, you'll see the `Welcome` page where you can set the `Language` (default is English, supports Chinese, Russian, and other major languages)
-- If you've already configured an LLM Provider, you will not see the `Welcome` page, to further configure language, you can access the `Settings`⚙️ page from the extension's top-right corner
-
-### Configure LLM Provider
-
-You need to configure at least one LLM Provider before using CoolCline (Required)
-
-- If you're installing `CoolCline` for the first time or clicked the `Reset` button at the bottom of the `Settings`⚙️ page, you'll see the `Welcome` page where you can configure `LLM Provider`
-- Based on your chosen LLM Provider, fill in the API Key, Model, and other parameters (some LLM Providers have quick links below the API Key input field to apply for an API Key)
-- If you've already configured an LLM Provider, you will not see the `Welcome` page, but you can access the `Settings`⚙️ page from the extension's top-right corner to further configure it or other options
-- The same configurations are synchronized and shared across different pages
-
----
-
-## Main Features
-
-> I'll mark three levels of using CoolCline: `Basic`, `Advanced`, and `Expert`. These should be interpreted as suggested focus areas rather than strict or rigid standards.
-
-### Role Mode Management
-
-Different role modes adapt to your workflow needs:
-
-#### Built-in Modes (Basic):
-
-- Select different role modes at the bottom of the chat input box
-- Autonomous Agent (`Agent` mode): A proactive AI programming agent with the following capabilities:
-
-    1. Context Analysis Capabilities:
-        - Uses codebase search for broad understanding
-        - Automatically uses file reading for detailed inspection
-        - Uses definition name lists to understand code structure
-        - Uses file lists to explore project organization
-        - Uses codebase-wide search to quickly locate relevant code
-    2. Task Management Capabilities:
-        - Automatically breaks down complex tasks into steps
-        - Uses new task tools to manage major subtasks
-        - Tracks progress and dependencies
-        - Uses task completion tools to verify task status
-    3. Code Operation Capabilities:
-        - Uses search and replace for systematic code changes
-        - Automatically uses file editing for precise modifications
-        - Uses diff application for complex changes
-        - Uses content insertion tools for code block management
-        - Validates changes and checks for errors
-        - **Git Snapshot Feature**:
-            - Uses `save_checkpoint` to save code state snapshots, automatically recording important modification points
-            - Uses `restore_checkpoint` to roll back to previous snapshots when needed
-            - Uses `get_checkpoint_diff` to view specific changes between snapshots
-            - Snapshot feature is independent for each task, not affecting your main Git repository
-            - All snapshot operations are performed on hidden branches, keeping the main branch clean
-            - You can start by sending one or more of the following messages:
-                - "Create a git snapshot before starting this task"
-                - "Save current changes as a git snapshot with description 'completed basic functionality'"
-                - "Show me the changes between the last two git snapshots"
-                - "This change is problematic, roll back to the previous git snapshot"
-                - "Compare the differences between the initial git snapshot and current state"
-    4. Research and Integration Capabilities:
-
-        - Automatically uses browser operations to research solutions and best practices (requires model support for Computer Use)
-        - Automatically uses commands (requires manual configuration of allowed commands in `Settings`⚙️ page)
-        - Automatically uses MCP tools to access external resources and data (requires manual configuration of MCP servers in the `MCP Servers` page)
-
-    5. Communication and Validation Capabilities: - Provides clear explanations for each operation - Uses follow-up questions for clarification - Records important changes - Uses appropriate tests to validate results
-       Note: `Agent` mode is not affected by the checkboxes in the auto-approval area
-
-- Code Assistant (`Code` mode): For writing, refactoring, fixing code, and running commands
-- Software Architect (`Architect` mode): For high-level technical design and system architecture (cannot write code or execute commands)
-- Technical Assistant (`Ask` mode): For codebase queries and concept discussions (cannot write code or execute commands)
-
-#### Custom Modes (Expert):
-
-- Access the `Prompts` page from CoolCline's top-right corner to create custom role modes
-- Custom chat modes appear below the `Ask` mode
-- Custom roles are saved locally and persist between CoolCline sessions
+> [!TIP]
+> Use the `CMD/CTRL + Shift + P` shortcut to open the command palette and type "Cline: Open In New Tab" to open the extension as a tab in your editor. This lets you use Cline side-by-side with your file explorer, and see how he changes your workspace more clearly.
 
 ---
 
-### Quick LLM Provider Switching (Advanced)
+<img align="right" width="340" src="https://github.com/user-attachments/assets/3cf21e04-7ce9-4d22-a7b9-ba2c595e88a4">
 
-The switch button is located at the bottom center of the input box.
+### Use any API and Model
 
-> Dropdown list options are maintained on the `Settings` page.
+Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, and GCP Vertex. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
 
-- You can open the `Settings`⚙️ page, and in the top area, you will see the settings location, which has a `default` option. By setting this, you will get the dropdown list you want.
-- Here, you can create and manage multiple LLM Provider options.
-    - You can even create separate options for different models of the same LLM Provider, each option saving the complete configuration information of the current LLM Provider.
-    - After creation, you can switch configurations in real-time at the bottom of the chat input box.
-    - Configuration information includes: LLM Provider, API Key, Model, and other configuration items related to the LLM Provider.
-    - The steps to create an LLM Provider option are as follows (steps 4 can be interchanged with 2 and 3):
-        1.  Click the + button, the system will automatically `copy` an option based on the current configuration information, named xx (copy);
-        2.  Click the ✏️ icon to modify the option name;
-        3.  Click the ☑️ to save the option name;
-        4.  Adjust core parameters such as Model as needed (the edit box will automatically save when it loses focus).
-    - Naming suggestions for option names: It is recommended to use the structure "Provider-ModelVersion-Feature", for example: openrouter-deepseek-v3-free; openrouter-deepseek-r1-free; deepseek-v3-official; deepseek-r1-official.
+The extension also keeps track of total tokens and API usage cost for the entire task loop and individual requests, keeping you informed of spend every step of the way.
 
----
+<!-- Transparent pixel to create line break after floating image -->
 
-### Enhance Your Input (Basic)
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
-After entering a question in the input box, you can click the ✨ button at the bottom, which will enhance your question content. You can set the LLM Provider used for `Prompt Enhancement` in the `Auxiliary Function Prompt Configuration` section on the `Prompts` page.
+<img align="left" width="370" src="https://github.com/user-attachments/assets/81be79a8-1fdb-4028-9129-5fe055e01e76">
 
----
+### Run Commands in Terminal
 
-### Context Mentions (Basic)
+Thanks to the new [shell integration updates in VSCode v1.93](https://code.visualstudio.com/updates/v1_93#_terminal-shell-integration-api), Cline can execute commands directly in your terminal and receive the output. This allows him to perform a wide range of tasks, from installing packages and running build scripts to deploying applications, managing databases, and executing tests, all while adapting to your dev environment & toolchain to get the job done right.
 
-> Associate the most relevant context to save your token budget
+For long running processes like dev servers, use the "Proceed While Running" button to let Cline continue in the task while the command runs in the background. As Cline works he’ll be notified of any new terminal output along the way, letting him react to issues that may come up, such as compile-time errors when editing files.
 
-Type `@` in the input box when you need to explicitly provide context:
+<!-- Transparent pixel to create line break after floating image -->
 
-- `@Problems` – Provide workspace errors/warnings for CoolCline to fix
-- `@Paste URL to fetch contents` – Fetch documentation from URL and convert to Markdown, no need to manually type `@`, just paste the link
-- `@Add Folder` – Provide folders to CoolCline, after typing `@`, you can directly enter the folder name for fuzzy search and quick selection
-- `@Add File` – Provide files to CoolCline, after typing `@`, you can directly enter the file name for fuzzy search and quick selection
-- `@Git Commits` – Provide Git commits or diff lists for CoolCline to analyze code history
-- `Add Terminal Content to Context` - No `@` needed, select content in terminal interface, right-click, and click `CoolCline:Add Terminal Content to Context`
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
----
+<img align="right" width="400" src="https://github.com/user-attachments/assets/c5977833-d9b8-491e-90f9-05f9cd38c588">
 
-### Auto Approval (Advanced)
+### Create and Edit Files
 
-To use CoolCline assistance in a controlled manner (preventing uncontrolled actions), the application provides three approval options:
+Cline can create and edit files directly in your editor, presenting you a diff view of the changes. You can edit or revert Cline's changes directly in the diff view editor, or provide feedback in chat until you're satisfied with the result. Cline also monitors linter/compiler errors (missing imports, syntax errors, etc.) so he can fix issues that come up along the way on his own.
 
-- Manual Approval: Review and approve each step to maintain full control, click allow or cancel in application prompts for saves, command execution, etc.
-- Auto Approval: Grant CoolCline the ability to run tasks without interruption (recommended in Agent mode for full autonomy)
-- Auto Approval Settings: Check or uncheck options you want to control above the chat input box or in settings page
-- For allowing automatic command approval: You need to go to the `Settings` page, in the `Command Line` area, add commands you want to auto-approve, like `npm install`, `npm run`, `npm test`, etc.
-- Hybrid: Auto-approve specific operations (like file writes) but require confirmation for higher-risk tasks (strongly recommended to `not` configure git add, git commit, etc., these should be done manually).
+All changes made by Cline are recorded in your file's Timeline, providing an easy way to track and revert modifications if needed.
 
-Regardless of your preference, you always have final control over CoolCline's operations.
+<!-- Transparent pixel to create line break after floating image -->
 
----
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
-### Mode Best Practices (Advanced)
+<img align="left" width="370" src="https://github.com/user-attachments/assets/bc2e85ba-dfeb-4fe6-9942-7cfc4703cbe5">
 
-#### Effective Use of Agent Mode
+### Use the Browser
 
-- Use LLM Provider and Model with good capabilities
-- Start with clear high-level task descriptions
-- Use `@` to provide clearer, more accurate context from codebase, files, URLs, Git commits, etc.
-- Utilize Git snapshot feature to manage important changes:
-  You can start by sending one or more of these messages:
-    - "Create a git snapshot before starting this task"
-    - "Save current changes as a git snapshot with description 'completed basic functionality'"
-    - "Show me the changes between the last two git snapshots"
-    - "This change is problematic, roll back to the previous git snapshot"
-    - "Compare the differences between the initial git snapshot and current state"
-- Configure allowed commands in the `Settings` page and MCP servers in the `MCP Servers` page, Agent will automatically use these commands and MCP servers
-- It's recommended to `not` set `git add`, `git commit` commands in the command settings interface, you should control these manually
-- Consider switching to specialized modes (Code/Architect/Ask) for specific subtasks when needed
+With Claude 3.5 Sonnet's new [Computer Use](https://www.anthropic.com/news/3-5-models-and-computer-use) capability, Cline can launch a browser, click elements, type text, and scroll, capturing screenshots and console logs at each step. This allows for interactive debugging, end-to-end testing, and even general web use! This gives him autonomy to fixing visual bugs and runtime issues without you needing to handhold and copy-pasting error logs yourself.
 
-#### Using Other Modes
+Try asking Cline to "test the app", and watch as he runs a command like `npm run dev`, launches your locally running dev server in a browser, and performs a series of tests to confirm that everything works. [See a demo here.](https://x.com/sdrzn/status/1850880547825823989)
 
-- Code Mode: Best for direct coding tasks and implementation
-- Architect Mode: Suitable for planning and design discussions
-- Ask Mode: Perfect for learning and exploring concepts
+<!-- Transparent pixel to create line break after floating image -->
 
----
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
-## Other Features
+<img align="right" width="350" src="https://github.com/user-attachments/assets/ac0efa14-5c1f-4c26-a42d-9d7c56f5fadd">
 
-### Browser Automation (Expert)
+### "add a tool that..."
 
-#### Browser Features
+Thanks to the [Model Context Protocol](https://github.com/modelcontextprotocol), Cline can extend his capabilities through custom tools. While you can use [community-made servers](https://github.com/modelcontextprotocol/servers), Cline can instead create and install tools tailored to your specific workflow. Just ask Cline to "add a tool" and he will handle everything, from creating a new MCP server to installing it into the extension. These custom tools then become part of Cline's toolkit, ready to use in future tasks.
 
-CoolCline can also open `browser` sessions to:
+-   "add a tool that fetches Jira tickets": Retrieve ticket ACs and put Cline to work
+-   "add a tool that manages AWS EC2s": Check server metrics and scale instances up or down
+-   "add a tool that pulls the latest PagerDuty incidents": Fetch details and ask Cline to fix bugs
 
-- Launch local or remote web applications
-- Click, type, scroll, and take screenshots
-- Collect console logs to debug runtime or UI/UX issues
+<!-- Transparent pixel to create line break after floating image -->
 
-Perfect for `end-to-end testing` or visually verifying changes without constant copy-pasting.
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
-#### Enable Browser Automation
+<img align="left" width="360" src="https://github.com/user-attachments/assets/7fdf41e6-281a-4b4b-ac19-020b838b6970">
 
-- Check `Approve Browser Operations` in the `Auto Approval` area (requires LLM Provider support for Computer Use)
-- In the `Settings` page, you can set other options in the `Browser Settings` area
+### Add Context
 
----
+**`@url`:** Paste in a URL for the extension to fetch and convert to markdown, useful when you want to give Cline the latest docs
 
-### Use MCP to Add Tools (Expert)
+**`@problems`:** Add workspace errors and warnings ('Problems' panel) for Cline to fix
 
-- MCP Official Documentation: https://modelcontextprotocol.io/introduction
+**`@file`:** Adds a file's contents so you don't have to waste API requests approving read file (+ type to search files)
 
-Extend CoolCline through the `Model Context Protocol (MCP)` with commands like:
+**`@folder`:** Adds folder's files all at once to speed up your workflow even more
 
-- "Add a tool to manage AWS EC2 resources."
-- "Add a tool to query company Jira."
-- "Add a tool to pull latest PagerDuty events."
+<!-- Transparent pixel to create line break after floating image -->
 
-CoolCline can autonomously build and configure new tools (with your approval) to immediately expand its capabilities.
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
----
+<img align="right" width="350" src="https://github.com/user-attachments/assets/140c8606-d3bf-41b9-9a1f-4dbf0d4c90cb">
 
-## Notification Settings (Basic)
+### Checkpoints: Compare and Restore
 
-- In the `Settings` page, you can enable sound effects and volume, so you'll get audio notifications when tasks complete (allowing you to multitask while CoolCline works)
+As Cline works through a task, the extension takes a snapshot of your workspace at each step. You can use the 'Compare' button to see a diff between the snapshot and your current workspace, and the 'Restore' button to roll back to that point.
 
----
+For example, when working with a local web server, you can use 'Restore Workspace Only' to quickly test different versions of your app, then use 'Restore Task and Workspace' when you find the version you want to continue building from. This lets you safely explore different approaches without losing progress.
 
-### Advanced Settings (Expert)
+<!-- Transparent pixel to create line break after floating image -->
 
-- In the `Settings` page, you can configure other options
-
----
-
-## Installation
-
-Two installation methods, choose one:
-
-- Search for `CoolCline` in the editor's extension panel to install directly
-- Or get the `.vsix` file from [Marketplace](https://marketplace.visualstudio.com/items?itemName=CoolCline.coolcline) / [Open-VSX](https://open-vsx.org/extension/CoolCline/coolcline) and `drag and drop` it into the editor
-
-> **Tips**:
->
-> - For better experience, move the extension to the right side of the screen: Right-click on the CoolCline extension icon -> Move to -> Secondary Sidebar
-> - If you close the `Secondary Sidebar` and don't know how to reopen it, click the `Toggle Secondary Sidebar` button in the top-right corner of VSCode, or use the keyboard shortcut ctrl + shift + L.
-
----
-
-## Local Setup and Development
-
-Refer to the instructions in the CONTRIBUTING file: [English](./CONTRIBUTING.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CONTRIBUTING_zh.md)
-
----
+<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
 
 ## Contributing
 
-We welcome community contributions! Here's how to participate:
-CONTRIBUTING: [English](./CONTRIBUTING.md) | [简体中文](https://gitee.com/coolcline/coolcline/blob/main/CONTRIBUTING_zh.md)
+To contribute to the project, start with our [Contributing Guide](CONTRIBUTING.md) to learn the basics. You can also join our [Discord](https://discord.gg/cline) to chat with other contributors in the `#contributors` channel. If you're looking for full-time work, check out our open positions on our [careers page](https://cline.bot/join-us)!
 
-> [CoolCline](https://gitee.com/coolcline/coolcline.git) draws inspiration from the excellent features of the `Clines` open source community (thanks to all `Clines` project contributors!).
+<details>
+<summary>Local Development Instructions</summary>
 
----
+1. Clone the repository _(Requires [git-lfs](https://git-lfs.com/))_:
+    ```bash
+    git clone https://github.com/cline/cline.git
+    ```
+2. Open the project in VSCode:
+    ```bash
+    code cline
+    ```
+3. Install the necessary dependencies for the extension and webview-gui:
+    ```bash
+    npm run install:all
+    ```
+4. Launch by pressing `F5` (or `Run`->`Start Debugging`) to open a new VSCode window with the extension loaded. (You may need to install the [esbuild problem matchers extension](https://marketplace.visualstudio.com/items?itemName=connor4312.esbuild-problem-matchers) if you run into issues building the project.)
 
-## Disclaimer
+</details>
 
-**Please note** that CoolCline makes no representations or warranties of any kind concerning any code, models, or other tools provided, any related third-party tools, or any output results. You assume **all risk** of using any such tools or output; such tools are provided on an **"as is"** and **"as available"** basis. Such risks may include but are not limited to intellectual property infringement, network vulnerabilities or attacks, bias, inaccuracies, errors, defects, viruses, downtime, property loss or damage, and/or personal injury. You are solely responsible for your use of any such tools or output, including but not limited to their legality, appropriateness, and results.
+<details>
+<summary>Creating a Pull Request</summary>
 
----
+1. Before creating a PR, generate a changeset entry:
+    ```bash
+    npm run changeset
+    ```
+   This will prompt you for:
+   - Type of change (major, minor, patch)
+     - `major` → breaking changes (1.0.0 → 2.0.0)
+     - `minor` → new features (1.0.0 → 1.1.0)
+     - `patch` → bug fixes (1.0.0 → 1.0.1)
+   - Description of your changes
+
+2. Commit your changes and the generated `.changeset` file
+
+3. Push your branch and create a PR on GitHub. Our CI will:
+   - Run tests and checks
+   - Changesetbot will create a comment showing the version impact
+   - When merged to main, changesetbot will create a Version Packages PR
+   - When the Version Packages PR is merged, a new release will be published
+
+</details>
+
 
 ## License
 
-[Apache 2.0 CoolCline](./LICENSE)
-
----
+[Apache 2.0 © 2025 Cline Bot Inc.](./LICENSE)

@@ -1,150 +1,125 @@
 // type that represents json data that is sent from extension to webview, called ExtensionMessage and has 'type' enum which can be 'plusButtonClicked' or 'settingsButtonClicked' or 'hello'
 
-import { ApiConfiguration, llmProvider, ModelInfo } from "./api"
-import { HistoryItem } from "./HistoryItem"
-import { McpServer } from "./mcp"
 import { GitCommit } from "../utils/git"
-import { Mode, CustomModePrompts, ModeConfig } from "./modes"
-import { CustomSupportPrompts } from "./support-prompt"
-import { ExperimentId } from "./experiments"
-
-export interface LanguageModelChatSelector {
-	vendor?: string
-	family?: string
-	version?: string
-	id?: string
-}
+import { ApiConfiguration, ModelInfo } from "./api"
+import { AutoApprovalSettings } from "./AutoApprovalSettings"
+import { BrowserSettings } from "./BrowserSettings"
+import { ChatSettings } from "./ChatSettings"
+import { HistoryItem } from "./HistoryItem"
+import { McpServer, McpMarketplaceCatalog, McpMarketplaceItem, McpDownloadResponse } from "./mcp"
+import { TelemetrySetting } from "./TelemetrySetting"
 
 // webview will hold state
 export interface ExtensionMessage {
 	type:
-		| "state"
-		| "invoke"
 		| "action"
-		| "theme"
+		| "state"
 		| "selectedImages"
-		| "workspaceUpdated"
-		| "partialMessage"
-		| "glamaModels"
-		| "openRouterModels"
-		| "openAiModels"
 		| "ollamaModels"
 		| "lmStudioModels"
-		| "vsCodeLmModels"
-		| "listApiConfig"
-		| "unboundModels"
-		| "requestyModels"
+		| "theme"
+		| "workspaceUpdated"
+		| "invoke"
+		| "partialMessage"
+		| "openRouterModels"
+		| "openAiModels"
 		| "mcpServers"
-		| "enhancedPrompt"
-		| "commitSearchResults"
-		| "vsCodeLmApiAvailable"
+		| "relinquishControl"
+		| "vsCodeLmModels"
 		| "requestVsCodeLmModels"
-		| "updatePrompt"
-		| "systemPrompt"
-		| "autoApprovalEnabled"
-		| "updateCustomMode"
-		| "deleteCustomMode"
-		| "currentCheckpointUpdated"
-		| "refreshRequestyModels"
+		| "authCallback"
+		| "mcpMarketplaceCatalog"
+		| "mcpDownloadDetails"
+		| "commitSearchResults"
+		| "openGraphData"
+		| "isImageUrlResult"
+		| "didUpdateSettings"
 	text?: string
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"
 		| "settingsButtonClicked"
 		| "historyButtonClicked"
-		| "promptsButtonClicked"
 		| "didBecomeVisible"
-	invoke?: "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"
+		| "accountLoginClicked"
+		| "accountLogoutClicked"
+	invoke?: Invoke
 	state?: ExtensionState
 	images?: string[]
 	ollamaModels?: string[]
 	lmStudioModels?: string[]
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
 	filePaths?: string[]
-	openedTabs?: Array<{
-		label: string
-		isActive: boolean
-		path?: string
-	}>
-	partialMessage?: CoolClineMessage
-	glamaModels?: Record<string, ModelInfo>
+	partialMessage?: ClineMessage
 	openRouterModels?: Record<string, ModelInfo>
 	openAiModels?: string[]
 	mcpServers?: McpServer[]
+	customToken?: string
+	mcpMarketplaceCatalog?: McpMarketplaceCatalog
+	error?: string
+	mcpDownloadDetails?: McpDownloadResponse
 	commits?: GitCommit[]
-	listApiConfig?: ApiConfigMeta[]
-	mode?: Mode
-	customMode?: ModeConfig
-	slug?: string
-	unboundModels?: Record<string, ModelInfo>
-	requestyModels?: Record<string, ModelInfo>
+	openGraphData?: {
+		title?: string
+		description?: string
+		image?: string
+		url?: string
+		siteName?: string
+		type?: string
+	}
+	url?: string
+	isImage?: boolean
 }
 
-export interface ApiConfigMeta {
-	id: string
-	name: string
-	llmProvider?: llmProvider
-}
+export type Invoke = "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
+
+export type Platform = "aix" | "darwin" | "freebsd" | "linux" | "openbsd" | "sunos" | "win32" | "unknown"
+
+export const DEFAULT_PLATFORM = "unknown"
 
 export interface ExtensionState {
 	version: string
-	coolclineMessages: CoolClineMessage[]
+	apiConfiguration?: ApiConfiguration
+	customInstructions?: string
+	uriScheme?: string
+	currentTaskItem?: HistoryItem
+	checkpointTrackerErrorMessage?: string
+	clineMessages: ClineMessage[]
 	taskHistory: HistoryItem[]
 	shouldShowAnnouncement: boolean
-	apiConfiguration?: ApiConfiguration
-	currentApiConfigName?: string
-	listApiConfigMeta?: ApiConfigMeta[]
-	customInstructions?: string
-	customModePrompts?: CustomModePrompts
-	customSupportPrompts?: CustomSupportPrompts
-	alwaysAllowReadOnly?: boolean
-	alwaysAllowWrite?: boolean
-	alwaysAllowExecute?: boolean
-	alwaysAllowBrowser?: boolean
-	alwaysAllowMcp?: boolean
-	alwaysApproveResubmit?: boolean
-	alwaysAllowModeSwitch?: boolean
-	requestDelaySeconds: number
-	rateLimitSeconds: number // Minimum time between successive requests (0 = disabled)
-	uriScheme?: string
-	allowedCommands?: string[]
-	soundEnabled?: boolean
-	soundVolume?: number
-	diffEnabled?: boolean
-	browserViewportSize?: string
-	screenshotQuality?: number
-	fuzzyMatchThreshold?: number
-	preferredLanguage: string
-	writeDelayMs: number
-	terminalOutputLineLimit?: number
-	mcpEnabled: boolean
-	enableMcpServerCreation: boolean
-	mode: Mode
-	modeApiConfigs?: Record<Mode, string>
-	enhancementApiConfigId?: string
-	experiments: Record<ExperimentId, boolean> // Map of experiment IDs to their enabled state
-	autoApprovalEnabled?: boolean
-	customModes: ModeConfig[]
-	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true} if diffEnabled)
-	checkpointsEnabled: boolean
-	requestyModels: Record<string, ModelInfo>
+	autoApprovalSettings: AutoApprovalSettings
+	browserSettings: BrowserSettings
+	chatSettings: ChatSettings
+	platform: Platform
+	userInfo?: {
+		displayName: string | null
+		email: string | null
+		photoURL: string | null
+	}
+	mcpMarketplaceEnabled?: boolean
+	telemetrySetting: TelemetrySetting
+	planActSeparateModelsSetting: boolean
+	vscMachineId: string
 }
 
-export interface CoolClineMessage {
+export interface ClineMessage {
 	ts: number
 	type: "ask" | "say"
-	ask?: CoolClineAsk
-	say?: CoolClineSay
+	ask?: ClineAsk
+	say?: ClineSay
 	text?: string
+	reasoning?: string
 	images?: string[]
 	partial?: boolean
-	reasoning?: string
+	lastCheckpointHash?: string
+	isCheckpointCheckedOut?: boolean
 	conversationHistoryIndex?: number
-	conversationHistoryDeletedRange?: [number, number] // 用于记录对话历史被截断的范围
+	conversationHistoryDeletedRange?: [number, number] // for when conversation history is truncated for API requests
 }
 
-export type CoolClineAsk =
+export type ClineAsk =
 	| "followup"
+	| "plan_mode_response"
 	| "command"
 	| "command_output"
 	| "completion_result"
@@ -153,10 +128,11 @@ export type CoolClineAsk =
 	| "resume_task"
 	| "resume_completed_task"
 	| "mistake_limit_reached"
+	| "auto_approval_max_req_reached"
 	| "browser_action_launch"
 	| "use_mcp_server"
 
-export type CoolClineSay =
+export type ClineSay =
 	| "task"
 	| "error"
 	| "api_req_started"
@@ -167,46 +143,42 @@ export type CoolClineSay =
 	| "user_feedback"
 	| "user_feedback_diff"
 	| "api_req_retried"
-	| "api_req_retry_delayed"
+	| "command"
 	| "command_output"
 	| "tool"
 	| "shell_integration_warning"
+	| "browser_action_launch"
 	| "browser_action"
 	| "browser_action_result"
-	| "command"
 	| "mcp_server_request_started"
 	| "mcp_server_response"
-	| "new_task_started"
-	| "new_task"
-	| "api_req_deleted"
-	| "checkpoint_saved"
+	| "use_mcp_server"
+	| "diff_error"
+	| "deleted_api_reqs"
+	| "clineignore_error"
+	| "checkpoint_created"
 
-export interface CoolClineSayTool {
+export interface ClineSayTool {
 	tool:
 		| "editedExistingFile"
-		| "appliedDiff"
 		| "newFileCreated"
 		| "readFile"
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
 		| "listCodeDefinitionNames"
 		| "searchFiles"
-		| "switchMode"
-		| "newTask"
 	path?: string
 	diff?: string
 	content?: string
 	regex?: string
 	filePattern?: string
-	mode?: string
-	reason?: string
 }
 
 // must keep in sync with system prompt
 export const browserActions = ["launch", "click", "type", "scroll_down", "scroll_up", "close"] as const
 export type BrowserAction = (typeof browserActions)[number]
 
-export interface CoolClineSayBrowserAction {
+export interface ClineSayBrowserAction {
 	action: BrowserAction
 	coordinate?: string
 	text?: string
@@ -219,7 +191,7 @@ export type BrowserActionResult = {
 	currentMousePosition?: string
 }
 
-export interface CoolClineAskUseMcpServer {
+export interface ClineAskUseMcpServer {
 	serverName: string
 	type: "use_mcp_tool" | "access_mcp_resource"
 	toolName?: string
@@ -227,15 +199,17 @@ export interface CoolClineAskUseMcpServer {
 	uri?: string
 }
 
-export interface CoolClineApiReqInfo {
+export interface ClineApiReqInfo {
 	request?: string
 	tokensIn?: number
 	tokensOut?: number
 	cacheWrites?: number
 	cacheReads?: number
 	cost?: number
-	cancelReason?: CoolClineApiReqCancelReason
+	cancelReason?: ClineApiReqCancelReason
 	streamingFailedMessage?: string
 }
 
-export type CoolClineApiReqCancelReason = "streaming_failed" | "user_cancelled"
+export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"
+
+export const COMPLETION_RESULT_CHANGES_FLAG = "HAS_CHANGES"

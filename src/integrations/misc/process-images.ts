@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 import fs from "fs/promises"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
+import * as path from "path"
 
 export async function selectImages(): Promise<string[]> {
 	const options: vscode.OpenDialogOptions = {
@@ -30,7 +30,7 @@ export async function selectImages(): Promise<string[]> {
 }
 
 function getMimeType(filePath: string): string {
-	const ext = PathUtils.extname(filePath).toLowerCase()
+	const ext = path.extname(filePath).toLowerCase()
 	switch (ext) {
 		case ".png":
 			return "image/png"

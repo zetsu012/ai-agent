@@ -23,7 +23,7 @@ function asObjectSafe(value: any): object {
 
 		return {}
 	} catch (error) {
-		console.warn("CoolCline <Language Model API>: Failed to parse object:", error)
+		console.warn("Cline <Language Model API>: Failed to parse object:", error)
 		return {}
 	}
 }
@@ -161,7 +161,7 @@ export async function convertToAnthropicMessage(
 ): Promise<Anthropic.Messages.Message> {
 	const anthropicRole: string | null = convertToAnthropicRole(vsCodeLmMessage.role)
 	if (anthropicRole !== "assistant") {
-		throw new Error("CoolCline <Language Model API>: Only assistant messages are supported.")
+		throw new Error("Cline <Language Model API>: Only assistant messages are supported.")
 	}
 
 	return {
@@ -175,6 +175,7 @@ export async function convertToAnthropicMessage(
 					return {
 						type: "text",
 						text: part.value,
+						citations: null,
 					}
 				}
 
@@ -195,6 +196,8 @@ export async function convertToAnthropicMessage(
 		usage: {
 			input_tokens: 0,
 			output_tokens: 0,
+			cache_creation_input_tokens: null,
+			cache_read_input_tokens: null,
 		},
 	}
 }

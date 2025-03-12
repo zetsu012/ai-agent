@@ -1,231 +1,137 @@
-import {
-	BedrockRuntimeClient,
-	ConverseStreamCommand,
-	ConverseCommand,
-	BedrockRuntimeClientConfig,
-} from "@aws-sdk/client-bedrock-runtime"
-import { fromIni } from "@aws-sdk/credential-providers"
+import AnthropicBedrock from "@anthropic-ai/bedrock-sdk"
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandler, SingleCompletionHandler } from "../"
-import { ApiHandlerOptions, BedrockModelId, ModelInfo, bedrockDefaultModelId, bedrockModels } from "../../shared/api"
+import { withRetry } from "../retry"
+import { ApiHandler } from "../"
+import { ApiHandlerOptions, bedrockDefaultModelId, BedrockModelId, bedrockModels, ModelInfo } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
-import { convertToBedrockConverseMessages, convertToAnthropicMessage } from "../transform/bedrock-converse-format"
-import { BEDROCK_DEFAULT_TEMPERATURE } from "./constants"
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers"
 
-const BEDROCK_DEFAULT_TOP_P = 0.1
-
-// Define types for stream events based on AWS SDK
-export interface StreamEvent {
-	messageStart?: {
-		role?: string
-	}
-	messageStop?: {
-		stopReason?: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence"
-		additionalModelResponseFields?: Record<string, unknown>
-	}
-	contentBlockStart?: {
-		start?: {
-			text?: string
-		}
-		contentBlockIndex?: number
-	}
-	contentBlockDelta?: {
-		delta?: {
-			text?: string
-		}
-		contentBlockIndex?: number
-	}
-	metadata?: {
-		usage?: {
-			inputTokens: number
-			outputTokens: number
-			totalTokens?: number // Made optional since we don't use it
-		}
-		metrics?: {
-			latencyMs: number
-		}
-	}
-}
-
-export class AwsBedrockHandler implements ApiHandler, SingleCompletionHandler {
+// https://docs.anthropic.com/en/api/claude-on-amazon-bedrock
+export class AwsBedrockHandler implements ApiHandler {
 	private options: ApiHandlerOptions
-	private client: BedrockRuntimeClient
 
 	constructor(options: ApiHandlerOptions) {
 		this.options = options
-
-		const clientConfig: BedrockRuntimeClientConfig = {
-			region: this.options.awsRegion || "us-east-1",
-		}
-
-		if (this.options.awsUseProfile && this.options.awsProfile) {
-			// Use profile-based credentials if enabled and profile is set
-			clientConfig.credentials = fromIni({
-				profile: this.options.awsProfile,
-			})
-		} else if (this.options.awsAccessKey && this.options.awsSecretKey) {
-			// Use direct credentials if provided
-			clientConfig.credentials = {
-				accessKeyId: this.options.awsAccessKey,
-				secretAccessKey: this.options.awsSecretKey,
-				...(this.options.awsSessionToken ? { sessionToken: this.options.awsSessionToken } : {}),
-			}
-		}
-
-		this.client = new BedrockRuntimeClient(clientConfig)
 	}
 
+	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-		const modelConfig = this.getModel()
+		// cross region inference requires prefixing the model id with the region
+		let modelId = await this.getModelId()
 
-		// Handle cross-region inference
-		let modelId: string
-		if (this.options.awsUseCrossRegionInference) {
-			let regionPrefix = (this.options.awsRegion || "").slice(0, 3)
-			switch (regionPrefix) {
-				case "us-":
-					modelId = `us.${modelConfig.id}`
-					break
-				case "eu-":
-					modelId = `eu.${modelConfig.id}`
-					break
-				default:
-					modelId = modelConfig.id
-					break
-			}
-		} else {
-			modelId = modelConfig.id
-		}
+		let budget_tokens = this.options.thinkingBudgetTokens || 0
+		const reasoningOn = modelId.includes("3-7") && budget_tokens !== 0 ? true : false
 
-		// Convert messages to Bedrock format
-		const formattedMessages = convertToBedrockConverseMessages(messages)
+		// Get model info and message indices for caching
+		const model = this.getModel()
+		const userMsgIndices = messages.reduce((acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc), [] as number[])
+		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-		// Construct the payload
-		const is37Model = modelId.includes("claude-3-7-sonnet")
-		const payload = {
-			modelId,
-			messages: formattedMessages,
-			system: [{ text: systemPrompt }],
-			inferenceConfig: {
-				maxTokens: is37Model ? 128_000 : modelConfig.info.maxTokens || 5000,
-				temperature: this.options.modelTemperature ?? BEDROCK_DEFAULT_TEMPERATURE,
-				topP: BEDROCK_DEFAULT_TOP_P,
-				...(this.options.awsUsePromptCache
-					? {
-							promptCache: {
-								promptCacheId: this.options.awspromptCacheId || "",
-							},
-						}
-					: {}),
-			},
-		}
+		// Create anthropic client, using sessions created or renewed after this handler's
+		// initialization, and allowing for session renewal if necessary as well
+		const client = await this.getClient()
 
-		try {
-			const command = new ConverseStreamCommand(payload)
-			const response = await this.client.send(command)
-
-			if (!response.stream) {
-				throw new Error("No stream available in the response")
-			}
-
-			for await (const chunk of response.stream) {
-				// Parse the chunk as JSON if it's a string (for tests)
-				let streamEvent: StreamEvent
-				try {
-					streamEvent = typeof chunk === "string" ? JSON.parse(chunk) : (chunk as unknown as StreamEvent)
-				} catch (e) {
-					console.error("Failed to parse stream event:", e)
-					continue
+		const stream = await client.messages.create({
+			model: modelId,
+			max_tokens: model.info.maxTokens || 8192,
+			thinking: reasoningOn ? { type: "enabled", budget_tokens: budget_tokens } : undefined,
+			temperature: reasoningOn ? undefined : 0,
+			system: [
+				{
+					text: systemPrompt,
+					type: "text",
+					...(this.options.awsBedrockUsePromptCache === true && {
+						cache_control: { type: "ephemeral" },
+					}),
+				},
+			],
+			messages: messages.map((message, index) => {
+				if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+					return {
+						...message,
+						content:
+							typeof message.content === "string"
+								? [
+										{
+											type: "text",
+											text: message.content,
+											...(this.options.awsBedrockUsePromptCache === true && {
+												cache_control: { type: "ephemeral" },
+											}),
+										},
+									]
+								: message.content.map((content, contentIndex) =>
+										contentIndex === message.content.length - 1
+											? {
+													...content,
+													...(this.options.awsBedrockUsePromptCache === true && {
+														cache_control: { type: "ephemeral" },
+													}),
+												}
+											: content,
+									),
+					}
 				}
+				return message
+			}),
+			stream: true,
+		})
 
-				// Handle metadata events first
-				if (streamEvent.metadata?.usage) {
+		for await (const chunk of stream) {
+			switch (chunk.type) {
+				case "message_start":
+					const usage = chunk.message.usage
 					yield {
 						type: "usage",
-						inputTokens: streamEvent.metadata.usage.inputTokens || 0,
-						outputTokens: streamEvent.metadata.usage.outputTokens || 0,
+						inputTokens: usage.input_tokens || 0,
+						outputTokens: usage.output_tokens || 0,
+						cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+						cacheReadTokens: usage.cache_read_input_tokens || undefined,
 					}
-					continue
-				}
-
-				// Handle message start
-				if (streamEvent.messageStart) {
-					continue
-				}
-
-				// Handle content blocks
-				if (streamEvent.contentBlockStart?.start?.text) {
+					break
+				case "message_delta":
 					yield {
-						type: "text",
-						text: streamEvent.contentBlockStart.start.text,
+						type: "usage",
+						inputTokens: 0,
+						outputTokens: chunk.usage.output_tokens || 0,
 					}
-					continue
-				}
-
-				// Handle content deltas
-				if (streamEvent.contentBlockDelta?.delta?.text) {
-					yield {
-						type: "text",
-						text: streamEvent.contentBlockDelta.delta.text,
+					break
+				case "content_block_start":
+					switch (chunk.content_block.type) {
+						case "text":
+							if (chunk.index > 0) {
+								yield {
+									type: "text",
+									text: "\n",
+								}
+							}
+							yield {
+								type: "text",
+								text: chunk.content_block.text,
+							}
+							break
 					}
-					continue
-				}
-
-				// Handle message stop
-				if (streamEvent.messageStop) {
-					continue
-				}
-			}
-		} catch (error: unknown) {
-			console.error("Bedrock Runtime API Error:", error)
-			// Only access stack if error is an Error object
-			if (error instanceof Error) {
-				console.error("Error stack:", error.stack)
-				yield {
-					type: "text",
-					text: `Error: ${error.message}`,
-				}
-				yield {
-					type: "usage",
-					inputTokens: 0,
-					outputTokens: 0,
-				}
-				throw error
-			} else {
-				const unknownError = new Error("An unknown error occurred")
-				yield {
-					type: "text",
-					text: unknownError.message,
-				}
-				yield {
-					type: "usage",
-					inputTokens: 0,
-					outputTokens: 0,
-				}
-				throw unknownError
+					break
+				case "content_block_delta":
+					switch (chunk.delta.type) {
+						case "text_delta":
+							yield {
+								type: "text",
+								text: chunk.delta.text,
+							}
+							break
+					}
+					break
 			}
 		}
 	}
 
-	getModel(): { id: BedrockModelId | string; info: ModelInfo } {
+	getModel(): { id: BedrockModelId; info: ModelInfo } {
 		const modelId = this.options.apiModelId
-		if (modelId) {
-			// For tests, allow any model ID
-			if (process.env.NODE_ENV === "test") {
-				return {
-					id: modelId,
-					info: {
-						maxTokens: 5000,
-						contextWindow: 128_000,
-						supportsPromptCache: false,
-					},
-				}
-			}
-			// For production, validate against known models
-			if (modelId in bedrockModels) {
-				const id = modelId as BedrockModelId
-				return { id, info: bedrockModels[id] }
-			}
+		if (modelId && modelId in bedrockModels) {
+			const id = modelId as BedrockModelId
+			return { id, info: bedrockModels[id] }
 		}
 		return {
 			id: bedrockDefaultModelId,
@@ -233,65 +139,67 @@ export class AwsBedrockHandler implements ApiHandler, SingleCompletionHandler {
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	private async getClient(): Promise<AnthropicBedrock> {
+		// Create AWS credentials by executing a an AWS provider chain exactly as the
+		// Anthropic SDK does it, by wrapping the default chain into a temporary process
+		// environment.
+		const providerChain = fromNodeProviderChain()
+		const credentials = await AwsBedrockHandler.withTempEnv(
+			() => {
+				AwsBedrockHandler.setEnv("AWS_REGION", this.options.awsRegion)
+				AwsBedrockHandler.setEnv("AWS_ACCESS_KEY_ID", this.options.awsAccessKey)
+				AwsBedrockHandler.setEnv("AWS_SECRET_ACCESS_KEY", this.options.awsSecretKey)
+				AwsBedrockHandler.setEnv("AWS_SESSION_TOKEN", this.options.awsSessionToken)
+				AwsBedrockHandler.setEnv("AWS_PROFILE", this.options.awsProfile)
+			},
+			() => providerChain(),
+		)
+
+		// Return an AnthropicBedrock client with the resolved/assumed credentials.
+		//
+		// When AnthropicBedrock creates its AWS client, the chain will execute very
+		// fast as the access/secret keys will already be already provided, and have
+		// a higher precedence than the profiles.
+		return new AnthropicBedrock({
+			awsAccessKey: credentials.accessKeyId,
+			awsSecretKey: credentials.secretAccessKey,
+			awsSessionToken: credentials.sessionToken,
+			awsRegion: this.options.awsRegion || "us-east-1",
+		})
+	}
+
+	async getModelId(): Promise<string> {
+		if (this.options.awsUseCrossRegionInference) {
+			let regionPrefix = (this.options.awsRegion || "").slice(0, 3)
+			switch (regionPrefix) {
+				case "us-":
+					return `us.${this.getModel().id}`
+				case "eu-":
+					return `eu.${this.getModel().id}`
+				case "ap-":
+					return `apac.${this.getModel().id}`
+				default:
+					// cross region inference is not supported in this region, falling back to default model
+					return this.getModel().id
+			}
+		}
+		return this.getModel().id
+	}
+
+	private static async withTempEnv<R>(updateEnv: () => void, fn: () => Promise<R>): Promise<R> {
+		const previousEnv = { ...process.env }
+
 		try {
-			const modelConfig = this.getModel()
+			updateEnv()
+			return await fn()
+		} finally {
+			process.env = previousEnv
+		}
+	}
 
-			// Handle cross-region inference
-			let modelId: string
-			if (this.options.awsUseCrossRegionInference) {
-				let regionPrefix = (this.options.awsRegion || "").slice(0, 3)
-				switch (regionPrefix) {
-					case "us-":
-						modelId = `us.${modelConfig.id}`
-						break
-					case "eu-":
-						modelId = `eu.${modelConfig.id}`
-						break
-					default:
-						modelId = modelConfig.id
-						break
-				}
-			} else {
-				modelId = modelConfig.id
-			}
-
-			const is37Model = modelId.includes("claude-3-7-sonnet")
-			const payload = {
-				modelId,
-				messages: convertToBedrockConverseMessages([
-					{
-						role: "user",
-						content: prompt,
-					},
-				]),
-				inferenceConfig: {
-					maxTokens: is37Model ? 128_000 : modelConfig.info.maxTokens || 5000,
-					temperature: this.options.modelTemperature ?? BEDROCK_DEFAULT_TEMPERATURE,
-					topP: BEDROCK_DEFAULT_TOP_P,
-				},
-			}
-
-			const command = new ConverseCommand(payload)
-			const response = await this.client.send(command)
-
-			if (response.output && response.output instanceof Uint8Array) {
-				try {
-					const outputStr = new TextDecoder().decode(response.output)
-					const output = JSON.parse(outputStr)
-					if (output.content) {
-						return output.content
-					}
-				} catch (parseError) {
-					console.error("Failed to parse Bedrock response:", parseError)
-				}
-			}
-			return ""
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Bedrock completion error: ${error.message}`)
-			}
-			throw error
+	private static setEnv(key: string, value: string | undefined) {
+		if (key !== "" && value !== undefined) {
+			process.env[key] = value
 		}
 	}
 }

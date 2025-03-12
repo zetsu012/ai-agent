@@ -1,46 +1,39 @@
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import deepEqual from "fast-deep-equal"
 import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 import { useSize } from "react-use"
+import styled from "styled-components"
+import { BROWSER_VIEWPORT_PRESETS } from "../../../../src/shared/BrowserSettings"
+import { BrowserAction, BrowserActionResult, ClineMessage, ClineSayBrowserAction } from "../../../../src/shared/ExtensionMessage"
 import { useExtensionState } from "../../context/ExtensionStateContext"
-import {
-	BrowserAction,
-	BrowserActionResult,
-	CoolClineMessage,
-	CoolClineSayBrowserAction,
-} from "../../../../src/shared/ExtensionMessage"
 import { vscode } from "../../utils/vscode"
+import { BrowserSettingsMenu } from "../browser/BrowserSettingsMenu"
+import { CheckpointControls } from "../common/CheckpointControls"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
 import { ChatRowContent, ProgressIndicator } from "./ChatRow"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
 
 interface BrowserSessionRowProps {
-	messages: CoolClineMessage[]
+	messages: ClineMessage[]
 	isExpanded: (messageTs: number) => boolean
 	onToggleExpand: (messageTs: number) => void
-	lastModifiedMessage?: CoolClineMessage
+	lastModifiedMessage?: ClineMessage
 	isLast: boolean
 	onHeightChange: (isTaller: boolean) => void
-	isStreaming: boolean
 }
 
 const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const { messages, isLast, onHeightChange, lastModifiedMessage } = props
+	const { browserSettings } = useExtensionState()
 	const prevHeightRef = useRef(0)
 	const [maxActionHeight, setMaxActionHeight] = useState(0)
 	const [consoleLogsExpanded, setConsoleLogsExpanded] = useState(false)
 
-	const { browserViewportSize = "900x600" } = useExtensionState()
-	const [viewportWidth, viewportHeight] = browserViewportSize.split("x").map(Number)
-	const aspectRatio = ((viewportHeight / viewportWidth) * 100).toFixed(2)
-	const defaultMousePosition = `${Math.round(viewportWidth / 2)},${Math.round(viewportHeight / 2)}`
-
 	const isLastApiReqInterrupted = useMemo(() => {
 		// Check if last api_req_started is cancelled
 		const lastApiReqStarted = [...messages].reverse().find((m) => m.say === "api_req_started")
-		if (lastApiReqStarted?.text) {
-			const info = JSON.parse(lastApiReqStarted.text) as { cancelReason: string | null }
-			if (info && info.cancelReason !== null) {
+		if (lastApiReqStarted?.text != null) {
+			const info = JSON.parse(lastApiReqStarted.text)
+			if (info.cancelReason != null) {
 				return true
 			}
 		}
@@ -63,18 +56,18 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				screenshot?: string
 				mousePosition?: string
 				consoleLogs?: string
-				messages: CoolClineMessage[] // messages up to and including the result
+				messages: ClineMessage[] // messages up to and including the result
 			}
 			nextAction?: {
-				messages: CoolClineMessage[] // messages leading to next result
+				messages: ClineMessage[] // messages leading to next result
 			}
 		}[] = []
 
-		let currentStateMessages: CoolClineMessage[] = []
-		let nextActionMessages: CoolClineMessage[] = []
+		let currentStateMessages: ClineMessage[] = []
+		let nextActionMessages: ClineMessage[] = []
 
 		messages.forEach((message) => {
-			if (message.ask === "browser_action_launch") {
+			if (message.ask === "browser_action_launch" || message.say === "browser_action_launch") {
 				// Start first page
 				currentStateMessages = [message]
 			} else if (message.say === "browser_action_result") {
@@ -106,11 +99,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				// Reset for next page
 				currentStateMessages = []
 				nextActionMessages = []
-			} else if (
-				message.say === "api_req_started" ||
-				message.say === "text" ||
-				message.say === "browser_action"
-			) {
+			} else if (message.say === "api_req_started" || message.say === "text" || message.say === "browser_action") {
 				// These messages lead to the next result, so they should always go in nextActionMessages
 				nextActionMessages.push(message)
 			} else {
@@ -145,9 +134,19 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 
 	// Get initial URL from launch message
 	const initialUrl = useMemo(() => {
-		const launchMessage = messages.find((m) => m.ask === "browser_action_launch")
+		const launchMessage = messages.find((m) => m.ask === "browser_action_launch" || m.say === "browser_action_launch")
 		return launchMessage?.text || ""
 	}, [messages])
+
+	const isAutoApproved = useMemo(() => {
+		const launchMessage = messages.find((m) => m.ask === "browser_action_launch" || m.say === "browser_action_launch")
+		return launchMessage?.say === "browser_action_launch"
+	}, [messages])
+
+	// const lastCheckpointMessageTs = useMemo(() => {
+	// 	const lastCheckpointMessage = findLast(messages, (m) => m.lastCheckpointHash !== undefined)
+	// 	return lastCheckpointMessage?.ts
+	// }, [messages])
 
 	// Find the latest available URL and screenshot
 	const latestState = useMemo(() => {
@@ -162,18 +161,24 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				}
 			}
 		}
-		return { url: undefined, mousePosition: undefined, consoleLogs: undefined, screenshot: undefined }
+		return {
+			url: undefined,
+			mousePosition: undefined,
+			consoleLogs: undefined,
+			screenshot: undefined,
+		}
 	}, [pages])
 
 	const currentPage = pages[currentPageIndex]
 	const isLastPage = currentPageIndex === pages.length - 1
 
+	const defaultMousePosition = `${browserSettings.viewport.width * 0.7},${browserSettings.viewport.height * 0.5}`
+
 	// Use latest state if we're on the last page and don't have a state yet
 	const displayState = isLastPage
 		? {
 				url: currentPage?.currentState.url || latestState.url || initialUrl,
-				mousePosition:
-					currentPage?.currentState.mousePosition || latestState.mousePosition || defaultMousePosition,
+				mousePosition: currentPage?.currentState.mousePosition || latestState.mousePosition || defaultMousePosition,
 				consoleLogs: currentPage?.currentState.consoleLogs,
 				screenshot: currentPage?.currentState.screenshot || latestState.screenshot,
 			}
@@ -187,12 +192,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const [actionContent, { height: actionHeight }] = useSize(
 		<div>
 			{currentPage?.nextAction?.messages.map((message) => (
-				<BrowserSessionRowContent
-					key={message.ts}
-					{...props}
-					message={message}
-					setMaxActionHeight={setMaxActionHeight}
-				/>
+				<BrowserSessionRowContent key={message.ts} {...props} message={message} setMaxActionHeight={setMaxActionHeight} />
 			))}
 			{!isBrowsing && messages.some((m) => m.say === "browser_action_result") && currentPageIndex === 0 && (
 				<BrowserActionBox action={"launch"} text={initialUrl} />
@@ -218,7 +218,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		for (let i = actions.length - 1; i >= 0; i--) {
 			const message = actions[i]
 			if (message.say === "browser_action") {
-				const browserAction = JSON.parse(message.text || "{}") as CoolClineSayBrowserAction
+				const browserAction = JSON.parse(message.text || "{}") as ClineSayBrowserAction
 				if (browserAction.action === "click" && browserAction.coordinate) {
 					return browserAction.coordinate
 				}
@@ -228,68 +228,93 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	}, [isBrowsing, currentPage?.nextAction?.messages])
 
 	// Use latest click position while browsing, otherwise use display state
-	const mousePosition = isBrowsing
-		? latestClickPosition || displayState.mousePosition
-		: displayState.mousePosition || defaultMousePosition
+	const mousePosition = isBrowsing ? latestClickPosition || displayState.mousePosition : displayState.mousePosition
 
-	const [browserSessionRow, { height: rowHeight }] = useSize(
-		<div style={{ padding: "10px 6px 10px 15px", marginBottom: -10 }}>
-			<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+	// let shouldShowCheckpoints = true
+	// if (isLast) {
+	// 	shouldShowCheckpoints = lastModifiedMessage?.ask === "resume_completed_task" || lastModifiedMessage?.ask === "resume_task"
+	// }
+
+	const shouldShowSettings = useMemo(() => {
+		const lastMessage = messages[messages.length - 1]
+		return lastMessage?.ask === "browser_action_launch" || lastMessage?.say === "browser_action_launch"
+	}, [messages])
+
+	// Calculate maxWidth
+	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["Small Desktop (900x600)"].width ? 200 : undefined
+
+	const [browserSessionRow, { height }] = useSize(
+		<BrowserSessionRowContainer style={{ marginBottom: -10 }}>
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: "10px",
+					marginBottom: "10px",
+				}}>
 				{isBrowsing ? (
 					<ProgressIndicator />
 				) : (
 					<span
 						className={`codicon codicon-inspect`}
-						style={{ color: "var(--vscode-foreground)", marginBottom: "-1.5px" }}></span>
+						style={{
+							color: "var(--vscode-foreground)",
+							marginBottom: "-1.5px",
+						}}></span>
 				)}
 				<span style={{ fontWeight: "bold" }}>
-					<>CoolCline wants to use the browser:</>
+					<>{isAutoApproved ? "Cline is using the browser:" : "Cline wants to use the browser:"}</>
 				</span>
 			</div>
 			<div
 				style={{
 					borderRadius: 3,
 					border: "1px solid var(--vscode-editorGroup-border)",
-					overflow: "hidden",
+					// overflow: "hidden",
 					backgroundColor: CODE_BLOCK_BG_COLOR,
-					marginBottom: 10,
+					// marginBottom: 10,
+					maxWidth,
+					margin: "0 auto 10px auto", // Center the container
 				}}>
 				{/* URL Bar */}
 				<div
 					style={{
 						margin: "5px auto",
 						width: "calc(100% - 10px)",
-						boxSizing: "border-box", // includes padding in width calculation
-						backgroundColor: "var(--vscode-input-background)",
-						border: "1px solid var(--vscode-input-border)",
-						borderRadius: "4px",
-						padding: "3px 5px",
 						display: "flex",
 						alignItems: "center",
-						justifyContent: "center",
-						color: displayState.url
-							? "var(--vscode-input-foreground)"
-							: "var(--vscode-descriptionForeground)",
-						fontSize: "12px",
+						gap: "4px",
 					}}>
 					<div
 						style={{
-							textOverflow: "ellipsis",
-							overflow: "hidden",
-							whiteSpace: "nowrap",
-							width: "100%",
-							textAlign: "center",
+							flex: 1,
+							backgroundColor: "var(--vscode-input-background)",
+							border: "1px solid var(--vscode-input-border)",
+							borderRadius: "4px",
+							padding: "3px 5px",
+							minWidth: 0,
+							color: displayState.url ? "var(--vscode-input-foreground)" : "var(--vscode-descriptionForeground)",
+							fontSize: "12px",
 						}}>
-						{displayState.url || "http"}
+						<div
+							style={{
+								textOverflow: "ellipsis",
+								overflow: "hidden",
+								whiteSpace: "nowrap",
+								width: "100%",
+								textAlign: "center",
+							}}>
+							{displayState.url || "http"}
+						</div>
 					</div>
+					<BrowserSettingsMenu disabled={!shouldShowSettings} maxWidth={maxWidth} />
 				</div>
 
 				{/* Screenshot Area */}
 				<div
-					data-testid="screenshot-container"
 					style={{
 						width: "100%",
-						paddingBottom: `${aspectRatio}%`, // height/width ratio
+						paddingBottom: `${(browserSettings.viewport.height / browserSettings.viewport.width) * 100}%`,
 						position: "relative",
 						backgroundColor: "var(--vscode-input-background)",
 					}}>
@@ -323,7 +348,10 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							}}>
 							<span
 								className="codicon codicon-globe"
-								style={{ fontSize: "80px", color: "var(--vscode-descriptionForeground)" }}
+								style={{
+									fontSize: "80px",
+									color: "var(--vscode-descriptionForeground)",
+								}}
 							/>
 						</div>
 					)}
@@ -331,8 +359,8 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						<BrowserCursor
 							style={{
 								position: "absolute",
-								top: `${(parseInt(mousePosition.split(",")[1]) / viewportHeight) * 100}%`,
-								left: `${(parseInt(mousePosition.split(",")[0]) / viewportWidth) * 100}%`,
+								top: `${(parseInt(mousePosition.split(",")[1]) / browserSettings.viewport.height) * 100}%`,
+								left: `${(parseInt(mousePosition.split(",")[0]) / browserSettings.viewport.width) * 100}%`,
 								transition: "top 0.3s ease-out, left 0.3s ease-out",
 							}}
 						/>
@@ -348,7 +376,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							display: "flex",
 							alignItems: "center",
 							gap: "4px",
-							width: "100%",
+							// width: "100%",
 							justifyContent: "flex-start",
 							cursor: "pointer",
 							padding: `9px 8px ${consoleLogsExpanded ? 0 : 8}px 8px`,
@@ -393,27 +421,28 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					</div>
 				</div>
 			)}
-		</div>,
+
+			{/* {shouldShowCheckpoints && <CheckpointOverlay messageTs={lastCheckpointMessageTs} />} */}
+		</BrowserSessionRowContainer>,
 	)
 
 	// Height change effect
 	useEffect(() => {
 		const isInitialRender = prevHeightRef.current === 0
-		if (isLast && rowHeight !== 0 && rowHeight !== Infinity && rowHeight !== prevHeightRef.current) {
+		if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
 			if (!isInitialRender) {
-				onHeightChange(rowHeight > prevHeightRef.current)
+				onHeightChange(height > prevHeightRef.current)
 			}
-			prevHeightRef.current = rowHeight
+			prevHeightRef.current = height
 		}
-	}, [rowHeight, isLast, onHeightChange])
+	}, [height, isLast, onHeightChange])
 
 	return browserSessionRow
 }, deepEqual)
 
 interface BrowserSessionRowContentProps extends Omit<BrowserSessionRowProps, "messages"> {
-	message: CoolClineMessage
+	message: ClineMessage
 	setMaxActionHeight: (height: number) => void
-	isStreaming: boolean
 }
 
 const BrowserSessionRowContent = ({
@@ -423,13 +452,31 @@ const BrowserSessionRowContent = ({
 	lastModifiedMessage,
 	isLast,
 	setMaxActionHeight,
-	isStreaming,
 }: BrowserSessionRowContentProps) => {
 	const headerStyle: React.CSSProperties = {
 		display: "flex",
 		alignItems: "center",
 		gap: "10px",
 		marginBottom: "10px",
+	}
+
+	if (message.ask === "browser_action_launch" || message.say === "browser_action_launch") {
+		return (
+			<>
+				<div style={headerStyle}>
+					<span style={{ fontWeight: "bold" }}>Browser Session Started</span>
+				</div>
+				<div
+					style={{
+						borderRadius: 3,
+						border: "1px solid var(--vscode-editorGroup-border)",
+						overflow: "hidden",
+						backgroundColor: CODE_BLOCK_BG_COLOR,
+					}}>
+					<CodeBlock source={`${"```"}shell\n${message.text}\n${"```"}`} forceWrap={true} />
+				</div>
+			</>
+		)
 	}
 
 	switch (message.type) {
@@ -450,13 +497,12 @@ const BrowserSessionRowContent = ({
 								}}
 								lastModifiedMessage={lastModifiedMessage}
 								isLast={isLast}
-								isStreaming={isStreaming}
 							/>
 						</div>
 					)
 
 				case "browser_action":
-					const browserAction = JSON.parse(message.text || "{}") as CoolClineSayBrowserAction
+					const browserAction = JSON.parse(message.text || "{}") as ClineSayBrowserAction
 					return (
 						<BrowserActionBox
 							action={browserAction.action}
@@ -471,55 +517,27 @@ const BrowserSessionRowContent = ({
 
 		case "ask":
 			switch (message.ask) {
-				case "browser_action_launch":
-					return (
-						<>
-							<div style={headerStyle}>
-								<span style={{ fontWeight: "bold" }}>Browser Session Started</span>
-							</div>
-							<div
-								style={{
-									borderRadius: 3,
-									border: "1px solid var(--vscode-editorGroup-border)",
-									overflow: "hidden",
-									backgroundColor: CODE_BLOCK_BG_COLOR,
-								}}>
-								<CodeBlock source={`${"```"}shell\n${message.text}\n${"```"}`} forceWrap={true} />
-							</div>
-						</>
-					)
-
 				default:
 					return null
 			}
 	}
 }
 
-const BrowserActionBox = ({
-	action,
-	coordinate,
-	text,
-}: {
-	action: BrowserAction
-	coordinate?: string
-	text?: string
-}) => {
-	const { t } = useTranslation()
-
+const BrowserActionBox = ({ action, coordinate, text }: { action: BrowserAction; coordinate?: string; text?: string }) => {
 	const getBrowserActionText = (action: BrowserAction, coordinate?: string, text?: string) => {
 		switch (action) {
 			case "launch":
-				return String(t("chat.browser.launch")).replace("{url}", text || "")
+				return `Launch browser at ${text}`
 			case "click":
-				return String(t("chat.browser.click")).replace("{coordinate}", coordinate?.replace(",", ", ") || "")
+				return `Click (${coordinate?.replace(",", ", ")})`
 			case "type":
-				return String(t("chat.browser.type")).replace("{text}", text || "")
+				return `Type "${text}"`
 			case "scroll_down":
-				return String(t("chat.browser.scrollDown"))
+				return "Scroll down"
 			case "scroll_up":
-				return String(t("chat.browser.scrollUp"))
+				return "Scroll up"
 			case "close":
-				return String(t("chat.browser.close"))
+				return "Close browser"
 			default:
 				return action
 		}
@@ -544,7 +562,7 @@ const BrowserActionBox = ({
 							whiteSpace: "normal",
 							wordBreak: "break-word",
 						}}>
-						<span style={{ fontWeight: 500 }}>{String(t("chat.browser.action"))}: </span>
+						<span style={{ fontWeight: 500 }}>Browse Action: </span>
 						{getBrowserActionText(action, coordinate, text)}
 					</span>
 				</div>
@@ -567,9 +585,17 @@ const BrowserCursor: React.FC<{ style?: React.CSSProperties }> = ({ style }) => 
 				...style,
 			}}
 			alt="cursor"
-			aria-label="cursor"
 		/>
 	)
 }
+
+const BrowserSessionRowContainer = styled.div`
+	padding: 10px 6px 10px 15px;
+	position: relative;
+
+	&:hover ${CheckpointControls} {
+		opacity: 1;
+	}
+`
 
 export default BrowserSessionRow

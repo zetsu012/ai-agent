@@ -1,12 +1,12 @@
 import { globby, Options } from "globby"
 import os from "os"
+import * as path from "path"
 import { arePathsEqual } from "../../utils/path"
-import { PathUtils } from "../checkpoints/CheckpointUtils"
 
 export async function listFiles(dirPath: string, recursive: boolean, limit: number): Promise<[string[], boolean]> {
-	const absolutePath = PathUtils.normalizePath(dirPath)
-	// Do not allow listing files in root or home directory, which coolcline tends to want to do when the user's prompt is vague.
-	const root = process.platform === "win32" ? PathUtils.dirname(absolutePath) : "/"
+	const absolutePath = path.resolve(dirPath)
+	// Do not allow listing files in root or home directory, which cline tends to want to do when the user's prompt is vague.
+	const root = process.platform === "win32" ? path.parse(absolutePath).root : "/"
 	const isRoot = arePathsEqual(absolutePath, root)
 	if (isRoot) {
 		return [[root], false]
@@ -36,18 +36,21 @@ export async function listFiles(dirPath: string, recursive: boolean, limit: numb
 		".*", // '!**/.*' excludes hidden directories, while '!**/.*/**' excludes only their contents. This way we are at least aware of the existence of hidden directories.
 	].map((dir) => `**/${dir}/**`)
 
-	const options = {
+	const options: Options = {
 		cwd: dirPath,
 		dot: true, // do not ignore hidden files/directories
 		absolute: true,
-		markDirectories: true, // Append a / on any directories matched (always use forward slash for cross-platform compatibility)
+		markDirectories: true, // Append a / on any directories matched (/ is used on windows as well, so dont use path.sep)
 		gitignore: recursive, // globby ignores any files that are gitignored
 		ignore: recursive ? dirsToIgnore : undefined, // just in case there is no gitignore, we ignore sensible defaults
 		onlyFiles: false, // true by default, false means it will list directories on their own too
+		suppressErrors: true,
 	}
+
 	// * globs all files in one dir, ** globs files in nested directories
-	const files = recursive ? await globbyLevelByLevel(limit, options) : (await globby("*", options)).slice(0, limit)
-	return [files, files.length >= limit]
+	const filePaths = recursive ? await globbyLevelByLevel(limit, options) : (await globby("*", options)).slice(0, limit)
+
+	return [filePaths, filePaths.length >= limit]
 }
 
 /*

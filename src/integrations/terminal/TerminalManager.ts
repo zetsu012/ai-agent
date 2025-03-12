@@ -3,7 +3,6 @@ import * as vscode from "vscode"
 import { arePathsEqual } from "../../utils/path"
 import { mergePromise, TerminalProcess, TerminalProcessResultPromise } from "./TerminalProcess"
 import { TerminalInfo, TerminalRegistry } from "./TerminalRegistry"
-import { logger } from "../../utils/logging"
 
 /*
 TerminalManager:
@@ -71,66 +70,42 @@ Interestingly, some environments like Cursor enable these APIs even without the 
 This approach allows us to leverage advanced features when available while ensuring broad compatibility.
 */
 declare module "vscode" {
+	// https://github.com/microsoft/vscode/blob/f0417069c62e20f3667506f4b7e53ca0004b4e3e/src/vscode-dts/vscode.d.ts#L7442
+	interface Terminal {
+		shellIntegration?: {
+			cwd?: vscode.Uri
+			executeCommand?: (command: string) => {
+				read: () => AsyncIterable<string>
+			}
+		}
+	}
 	// https://github.com/microsoft/vscode/blob/f0417069c62e20f3667506f4b7e53ca0004b4e3e/src/vscode-dts/vscode.d.ts#L10794
 	interface Window {
-		onDidChangeTerminalShellIntegration?: (
-			listener: (e: { terminal: vscode.Terminal; shellIntegration: TerminalShellIntegration }) => any,
+		onDidStartTerminalShellExecution?: (
+			listener: (e: any) => any,
 			thisArgs?: any,
 			disposables?: vscode.Disposable[],
 		) => vscode.Disposable
 	}
 }
 
-// Extend the Terminal type to include our custom properties
-interface TerminalShellIntegration {
-	readonly cwd?: vscode.Uri
-	readonly executeCommand: (commandLine: string) => {
-		exitCode: Promise<number | undefined>
-		read: () => AsyncIterable<string>
-	}
-}
-
-type ExtendedTerminal = vscode.Terminal & {
-	readonly shellIntegration?: TerminalShellIntegration
-}
-
 export class TerminalManager {
 	private terminalIds: Set<number> = new Set()
 	private processes: Map<number, TerminalProcess> = new Map()
 	private disposables: vscode.Disposable[] = []
-	private shellIntegrationActivated: Map<number, boolean> = new Map()
 
 	constructor() {
-		// 监听 shell integration 激活事件
+		let disposable: vscode.Disposable | undefined
 		try {
-			const shellIntegrationDisposable = (vscode.window as vscode.Window).onDidChangeTerminalShellIntegration?.(
-				(e) => {
-					const terminal = e.terminal as ExtendedTerminal
-					const shellIntegration = e.shellIntegration
-
-					if (typeof shellIntegration?.executeCommand === "function") {
-						terminal.processId.then((id) => {
-							if (id) {
-								this.shellIntegrationActivated.set(id, true)
-								logger.debug("Shell integration 已激活", {
-									ctx: "terminal",
-									terminalName: terminal.name,
-									terminalId: id,
-									hasExecuteCommand: true,
-								})
-							}
-						})
-					}
-				},
-			)
-			if (shellIntegrationDisposable) {
-				this.disposables.push(shellIntegrationDisposable)
-			}
-		} catch (error) {
-			logger.warn("Shell integration 事件监听注册失败", {
-				ctx: "terminal",
-				error: error instanceof Error ? error.message : String(error),
+			disposable = (vscode.window as vscode.Window).onDidStartTerminalShellExecution?.(async (e) => {
+				// Creating a read stream here results in a more consistent output. This is most obvious when running the `date` command.
+				e?.execution?.read()
 			})
+		} catch (error) {
+			// console.error("Error setting up onDidEndTerminalShellExecution", error)
+		}
+		if (disposable) {
+			this.disposables.push(disposable)
 		}
 	}
 
@@ -144,67 +119,52 @@ export class TerminalManager {
 			terminalInfo.busy = false
 		})
 
+		// if shell integration is not available, remove terminal so it does not get reused as it may be running a long-running process
+		process.once("no_shell_integration", () => {
+			console.log(`no_shell_integration received for terminal ${terminalInfo.id}`)
+			// Remove the terminal so we can't reuse it (in case it's running a long-running process)
+			TerminalRegistry.removeTerminal(terminalInfo.id)
+			this.terminalIds.delete(terminalInfo.id)
+			this.processes.delete(terminalInfo.id)
+		})
+
 		const promise = new Promise<void>((resolve, reject) => {
 			process.once("continue", () => {
 				resolve()
 			})
 			process.once("error", (error) => {
-				logger.error(`终端 ${terminalInfo.id} 执行出错:`, {
-					ctx: "terminal",
-					error: error instanceof Error ? error.message : String(error),
-				})
+				console.error(`Error in terminal ${terminalInfo.id}:`, error)
 				reject(error)
 			})
 		})
 
-		const terminal = terminalInfo.terminal as ExtendedTerminal
-		const resultPromise = mergePromise(process, promise)
-
-		// 在后台执行命令
-		;(async () => {
-			// 检查是否已经激活
-			const shellIntegration = terminal.shellIntegration
-			const hasExecuteCommand = typeof shellIntegration?.executeCommand === "function"
-
-			if (hasExecuteCommand) {
-				process.run(terminal, command)
-				return
-			}
-
-			// 如果还没激活，等待激活
-			const terminalId = await terminal.processId
-			if (terminalId) {
-				try {
-					await pWaitFor(() => this.shellIntegrationActivated.get(terminalId) === true, { timeout: 3000 })
-					process.run(terminal, command)
-				} catch (error) {
-					// 如果等待超时，使用传统方式执行
-					logger.warn("Shell integration 等待超时，使用传统方式执行", {
-						ctx: "terminal",
-						terminalName: terminal.name,
-						terminalId,
-					})
-					process.run(terminal, command)
+		// if shell integration is already active, run the command immediately
+		if (terminalInfo.terminal.shellIntegration) {
+			process.waitForShellIntegration = false
+			process.run(terminalInfo.terminal, command)
+		} else {
+			// docs recommend waiting 3s for shell integration to activate
+			pWaitFor(() => terminalInfo.terminal.shellIntegration !== undefined, { timeout: 4000 }).finally(() => {
+				const existingProcess = this.processes.get(terminalInfo.id)
+				if (existingProcess && existingProcess.waitForShellIntegration) {
+					existingProcess.waitForShellIntegration = false
+					existingProcess.run(terminalInfo.terminal, command)
 				}
-			} else {
-				// 如果无法获取 terminalId，直接使用传统方式
-				process.run(terminal, command)
-			}
-		})()
+			})
+		}
 
-		return resultPromise
+		return mergePromise(process, promise)
 	}
 
 	async getOrCreateTerminal(cwd: string): Promise<TerminalInfo> {
 		const terminals = TerminalRegistry.getAllTerminals()
 
-		// 首先尝试找到匹配的终端
+		// Find available terminal from our pool first (created for this task)
 		const matchingTerminal = terminals.find((t) => {
 			if (t.busy) {
 				return false
 			}
-			const terminal = t.terminal as ExtendedTerminal
-			const terminalCwd = terminal.shellIntegration?.cwd
+			const terminalCwd = t.terminal.shellIntegration?.cwd // one of cline's commands could have changed the cwd of the terminal
 			if (!terminalCwd) {
 				return false
 			}
@@ -215,16 +175,17 @@ export class TerminalManager {
 			return matchingTerminal
 		}
 
-		// 如果没有匹配的，尝试找到空闲的终端
+		// If no matching terminal exists, try to find any non-busy terminal
 		const availableTerminal = terminals.find((t) => !t.busy)
 		if (availableTerminal) {
+			// Navigate back to the desired directory
 			await this.runCommand(availableTerminal, `cd "${cwd}"`)
 			this.terminalIds.add(availableTerminal.id)
 			return availableTerminal
 		}
 
-		// 如果都没有，创建新终端
-		const newTerminalInfo = await TerminalRegistry.createTerminal(cwd)
+		// If all terminals are busy, create a new one
+		const newTerminalInfo = TerminalRegistry.createTerminal(cwd)
 		this.terminalIds.add(newTerminalInfo.id)
 		return newTerminalInfo
 	}
@@ -249,48 +210,10 @@ export class TerminalManager {
 		return process ? process.isHot : false
 	}
 
-	async getTerminalContents(commands = -1): Promise<string> {
-		// 保存原始剪贴板内容
-		const originalContent = await vscode.env.clipboard.readText()
-
-		try {
-			// 清除当前选择
-			await vscode.commands.executeCommand("workbench.action.terminal.clearSelection")
-
-			// 根据 commands 参数选择不同的选择策略
-			if (commands < 0) {
-				// await vscode.commands.executeCommand("workbench.action.terminal.selectAll")
-				await vscode.commands.executeCommand("workbench.action.terminal.selectToPreviousCommand")
-			} else {
-				await vscode.commands.executeCommand("workbench.action.terminal.selectToPreviousCommand")
-			}
-
-			// 复制选中内容
-			await vscode.commands.executeCommand("workbench.action.terminal.copySelection")
-
-			// 获取复制的内容
-			const content = await vscode.env.clipboard.readText()
-
-			// 清除选择
-			await vscode.commands.executeCommand("workbench.action.terminal.clearSelection")
-
-			// 恢复原始剪贴板内容
-			await vscode.env.clipboard.writeText(originalContent)
-
-			// 如果内容未变，说明可能没有复制成功
-			if (content === originalContent) {
-				return ""
-			}
-
-			return content
-		} catch (error) {
-			// 确保恢复剪贴板内容
-			await vscode.env.clipboard.writeText(originalContent)
-			throw error
-		}
-	}
-
 	disposeAll() {
+		// for (const info of this.terminals) {
+		// 	//info.terminal.dispose() // dont want to dispose terminals when task is aborted
+		// }
 		this.terminalIds.clear()
 		this.processes.clear()
 		this.disposables.forEach((disposable) => disposable.dispose())

@@ -1,13 +1,17 @@
 import * as fs from "fs/promises"
+import * as path from "path"
 import { listFiles } from "../glob/list-files"
 import { LanguageParser, loadRequiredLanguageParsers } from "./languageParser"
 import { fileExistsAtPath } from "../../utils/fs"
-import { PathUtils } from "../checkpoints/CheckpointUtils"
+import { ClineIgnoreController } from "../../core/ignore/ClineIgnoreController"
 
 // TODO: implement caching behavior to avoid having to keep analyzing project for new tasks.
-export async function parseSourceCodeForDefinitionsTopLevel(dirPath: string): Promise<string> {
+export async function parseSourceCodeForDefinitionsTopLevel(
+	dirPath: string,
+	clineIgnoreController?: ClineIgnoreController,
+): Promise<string> {
 	// check if the path exists
-	const dirExists = await fileExistsAtPath(PathUtils.normalizePath(dirPath))
+	const dirExists = await fileExistsAtPath(path.resolve(dirPath))
 	if (!dirExists) {
 		return "This directory does not exist or you do not have permission to access it."
 	}
@@ -24,10 +28,14 @@ export async function parseSourceCodeForDefinitionsTopLevel(dirPath: string): Pr
 
 	// Parse specific files we have language parsers for
 	// const filesWithoutDefinitions: string[] = []
-	for (const file of filesToParse) {
-		const definitions = await parseFile(file, languageParsers)
+
+	// Filter filepaths for access if controller is provided
+	const allowedFilesToParse = clineIgnoreController ? clineIgnoreController.filterPaths(filesToParse) : filesToParse
+
+	for (const filePath of allowedFilesToParse) {
+		const definitions = await parseFile(filePath, languageParsers, clineIgnoreController)
 		if (definitions) {
-			result += `${PathUtils.relativePath(dirPath, file)}\n${definitions}\n`
+			result += `${path.relative(dirPath, filePath).toPosix()}\n${definitions}\n`
 		}
 		// else {
 		// 	filesWithoutDefinitions.push(file)
@@ -50,7 +58,10 @@ export async function parseSourceCodeForDefinitionsTopLevel(dirPath: string): Pr
 	return result ? result : "No source code definitions found."
 }
 
-function separateFiles(allFiles: string[]): { filesToParse: string[]; remainingFiles: string[] } {
+function separateFiles(allFiles: string[]): {
+	filesToParse: string[]
+	remainingFiles: string[]
+} {
 	const extensions = [
 		"js",
 		"jsx",
@@ -73,8 +84,10 @@ function separateFiles(allFiles: string[]): { filesToParse: string[]; remainingF
 		"java",
 		"php",
 		"swift",
+		// Kotlin
+		"kt",
 	].map((e) => `.${e}`)
-	const filesToParse = allFiles.filter((file) => extensions.includes(PathUtils.extname(file))).slice(0, 50) // 50 files max
+	const filesToParse = allFiles.filter((file) => extensions.includes(path.extname(file))).slice(0, 50) // 50 files max
 	const remainingFiles = allFiles.filter((file) => !filesToParse.includes(file))
 	return { filesToParse, remainingFiles }
 }
@@ -95,9 +108,16 @@ This approach allows us to focus on the most relevant parts of the code (defined
 - https://github.com/tree-sitter/tree-sitter/blob/master/lib/binding_web/test/helper.js
 - https://tree-sitter.github.io/tree-sitter/code-navigation-systems
 */
-async function parseFile(filePath: string, languageParsers: LanguageParser): Promise<string | undefined> {
+async function parseFile(
+	filePath: string,
+	languageParsers: LanguageParser,
+	clineIgnoreController?: ClineIgnoreController,
+): Promise<string | null> {
+	if (clineIgnoreController && !clineIgnoreController.validateAccess(filePath)) {
+		return null
+	}
 	const fileContent = await fs.readFile(filePath, "utf8")
-	const ext = PathUtils.extname(filePath).toLowerCase().slice(1)
+	const ext = path.extname(filePath).toLowerCase().slice(1)
 
 	const { parser, query } = languageParsers[ext] || {}
 	if (!parser || !query) {
@@ -156,23 +176,5 @@ async function parseFile(filePath: string, languageParsers: LanguageParser): Pro
 	if (formattedOutput.length > 0) {
 		return `|----\n${formattedOutput}|----\n`
 	}
-	return undefined
-}
-
-async function getDefinitions(dirPath: string): Promise<string> {
-	const dirExists = await fileExistsAtPath(PathUtils.normalizePath(dirPath))
-	if (!dirExists) {
-		return ""
-	}
-
-	let result = ""
-	const files = await fs.readdir(dirPath)
-	for (const file of files) {
-		if (!file.endsWith(".d.ts")) {
-			continue
-		}
-		const definitions = await fs.readFile(PathUtils.joinPath(dirPath, file), "utf8")
-		result += `${PathUtils.relativePath(dirPath, file)}\n${definitions}\n`
-	}
-	return result
+	return null
 }

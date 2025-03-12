@@ -9,20 +9,12 @@
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
-			"runtimeExecutable": "${execPath}",
 			"args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
-			"preLaunchTask": "debug-mode",
+			"preLaunchTask": "${defaultBuildTask}",
 			"env": {
-				"NODE_ENV": "development",
-				"VSCODE_DEBUG_MODE": "true"
-			},
-			"resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
-			"presentation": {
-				"hidden": false,
-				"group": "tasks",
-				"order": 1
+				"IS_DEV": "true",
+				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}"
 			}
 		}
 	]

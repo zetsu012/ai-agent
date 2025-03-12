@@ -8,7 +8,10 @@ export function convertToOpenAiMessages(
 
 	for (const anthropicMessage of anthropicMessages) {
 		if (typeof anthropicMessage.content === "string") {
-			openAiMessages.push({ role: anthropicMessage.role, content: anthropicMessage.content })
+			openAiMessages.push({
+				role: anthropicMessage.role,
+				content: anthropicMessage.content,
+			})
 		} else {
 			// image_url.url is base64 encoded image data
 			// ensure it contains the content-type of the image: data:image/png;base64,
@@ -85,7 +88,9 @@ export function convertToOpenAiMessages(
 							if (part.type === "image") {
 								return {
 									type: "image_url",
-									image_url: { url: `data:${part.source.media_type};base64,${part.source.data}` },
+									image_url: {
+										url: `data:${part.source.media_type};base64,${part.source.data}`,
+									},
 								}
 							}
 							return { type: "text", text: part.text }
@@ -146,9 +151,7 @@ export function convertToOpenAiMessages(
 }
 
 // Convert OpenAI response to Anthropic format
-export function convertToAnthropicMessage(
-	completion: OpenAI.Chat.Completions.ChatCompletion,
-): Anthropic.Messages.Message {
+export function convertToAnthropicMessage(completion: OpenAI.Chat.Completions.ChatCompletion): Anthropic.Messages.Message {
 	const openAiMessage = completion.choices[0].message
 	const anthropicMessage: Anthropic.Messages.Message = {
 		id: completion.id,
@@ -158,6 +161,7 @@ export function convertToAnthropicMessage(
 			{
 				type: "text",
 				text: openAiMessage.content || "",
+				citations: null,
 			},
 		],
 		model: completion.model,
@@ -178,6 +182,8 @@ export function convertToAnthropicMessage(
 		usage: {
 			input_tokens: completion.usage?.prompt_tokens || 0,
 			output_tokens: completion.usage?.completion_tokens || 0,
+			cache_creation_input_tokens: null,
+			cache_read_input_tokens: null,
 		},
 	}
 

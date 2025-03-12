@@ -1,24 +1,24 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 import { useWindowSize } from "react-use"
-import { CoolClineMessage } from "../../../../src/shared/ExtensionMessage"
+import { mentionRegexGlobal } from "../../../../src/shared/context-mentions"
+import { ClineMessage } from "../../../../src/shared/ExtensionMessage"
 import { useExtensionState } from "../../context/ExtensionStateContext"
+import { formatLargeNumber } from "../../utils/format"
+import { formatSize } from "../../utils/size"
 import { vscode } from "../../utils/vscode"
 import Thumbnails from "../common/Thumbnails"
-import { mentionRegexGlobal } from "../../../../src/shared/context-mentions"
-import { formatLargeNumber } from "../../utils/format"
 import { normalizeApiConfiguration } from "../settings/ApiOptions"
-import { useTranslation } from "react-i18next"
 
 interface TaskHeaderProps {
-	task: CoolClineMessage
+	task: ClineMessage
 	tokensIn: number
 	tokensOut: number
 	doesModelSupportPromptCache: boolean
 	cacheWrites?: number
 	cacheReads?: number
 	totalCost: number
-	contextTokens: number
+	lastApiReqTotalTokens?: number
 	onClose: () => void
 }
 
@@ -30,19 +30,18 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	cacheWrites,
 	cacheReads,
 	totalCost,
-	contextTokens,
+	lastApiReqTotalTokens,
 	onClose,
 }) => {
-	const { t } = useTranslation()
-	const { apiConfiguration } = useExtensionState()
-	const { selectedModelInfo } = useMemo(() => normalizeApiConfiguration(apiConfiguration), [apiConfiguration])
-	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
+	const { apiConfiguration, currentTaskItem, checkpointTrackerErrorMessage } = useExtensionState()
+	const [isTaskExpanded, setIsTaskExpanded] = useState(true)
 	const [isTextExpanded, setIsTextExpanded] = useState(false)
 	const [showSeeMore, setShowSeeMore] = useState(false)
 	const textContainerRef = useRef<HTMLDivElement>(null)
 	const textRef = useRef<HTMLDivElement>(null)
-	const contextWindow = selectedModelInfo?.contextWindow || 1
-	const contextPercentage = Math.round((contextTokens / contextWindow) * 100)
+
+	const { selectedModelInfo } = useMemo(() => normalizeApiConfiguration(apiConfiguration), [apiConfiguration])
+	const contextWindow = selectedModelInfo?.contextWindow
 
 	/*
 	When dealing with event listeners in React components that depend on state variables, we face a challenge. We want our listener to always use the most up-to-date version of a callback function that relies on current state, but we don't want to constantly add and remove event listeners as that function updates. This scenario often arises with resize listeners or other window events. Simply adding the listener in a useEffect with an empty dependency array risks using stale state, while including the callback in the dependencies can lead to unnecessary re-registrations of the listener. There are react hook libraries that provide a elegant solution to this problem by utilizing the useRef hook to maintain a reference to the latest callback function without triggering re-renders or effect re-runs. This approach ensures that our event listener always has access to the most current state while minimizing performance overhead and potential memory leaks from multiple listener registrations. 
@@ -101,15 +100,85 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	}, [task.text, windowWidth])
 
 	const isCostAvailable = useMemo(() => {
+		const openAiCompatHasPricing =
+			apiConfiguration?.apiProvider === "openai" &&
+			apiConfiguration?.openAiModelInfo?.inputPrice &&
+			apiConfiguration?.openAiModelInfo?.outputPrice
+		if (openAiCompatHasPricing) {
+			return true
+		}
 		return (
-			apiConfiguration?.llmProvider !== "openai" &&
-			apiConfiguration?.llmProvider !== "ollama" &&
-			apiConfiguration?.llmProvider !== "lmstudio" &&
-			apiConfiguration?.llmProvider !== "gemini"
+			apiConfiguration?.apiProvider !== "vscode-lm" &&
+			apiConfiguration?.apiProvider !== "ollama" &&
+			apiConfiguration?.apiProvider !== "lmstudio" &&
+			apiConfiguration?.apiProvider !== "gemini"
 		)
-	}, [apiConfiguration?.llmProvider])
+	}, [apiConfiguration?.apiProvider, apiConfiguration?.openAiModelInfo])
 
-	const shouldShowPromptCacheInfo = doesModelSupportPromptCache && apiConfiguration?.llmProvider !== "openrouter"
+	const shouldShowPromptCacheInfo =
+		doesModelSupportPromptCache && apiConfiguration?.apiProvider !== "openrouter" && apiConfiguration?.apiProvider !== "cline"
+
+	const ContextWindowComponent = (
+		<>
+			{isTaskExpanded && contextWindow && (
+				<div
+					style={{
+						display: "flex",
+						flexDirection: windowWidth < 270 ? "column" : "row",
+						gap: "4px",
+					}}>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "4px",
+							flexShrink: 0, // Prevents shrinking
+						}}>
+						<span style={{ fontWeight: "bold" }}>
+							{/* {windowWidth > 280 && windowWidth < 310 ? "Context:" : "Context Window:"} */}
+							Context Window:
+						</span>
+					</div>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "3px",
+							flex: 1,
+							whiteSpace: "nowrap",
+						}}>
+						<span>{formatLargeNumber(lastApiReqTotalTokens || 0)}</span>
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "3px",
+								flex: 1,
+							}}>
+							<div
+								style={{
+									flex: 1,
+									height: "4px",
+									backgroundColor: "color-mix(in srgb, var(--vscode-badge-foreground) 20%, transparent)",
+									borderRadius: "2px",
+									overflow: "hidden",
+								}}>
+								<div
+									style={{
+										width: `${((lastApiReqTotalTokens || 0) / contextWindow) * 100}%`,
+										height: "100%",
+										backgroundColor: "var(--vscode-badge-foreground)",
+										borderRadius: "2px",
+									}}
+								/>
+							</div>
+							<span>{formatLargeNumber(contextWindow)}</span>
+						</div>
+					</div>
+				</div>
+			)}
+		</>
+	)
 
 	return (
 		<div style={{ padding: "10px 13px 10px 13px" }}>
@@ -145,7 +214,12 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							minWidth: 0, // This allows the div to shrink below its content size
 						}}
 						onClick={() => setIsTaskExpanded(!isTaskExpanded)}>
-						<div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								flexShrink: 0,
+							}}>
 							<span className={`codicon codicon-chevron-${isTaskExpanded ? "down" : "right"}`}></span>
 						</div>
 						<div
@@ -158,15 +232,13 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								minWidth: 0, // This allows the div to shrink below its content size
 							}}>
 							<span style={{ fontWeight: "bold" }}>
-								{String(t("chat.task.title"))}
+								Task
 								{!isTaskExpanded && ":"}
 							</span>
-							{!isTaskExpanded && (
-								<span style={{ marginLeft: 4 }}>{highlightMentions(task.text, false)}</span>
-							)}
+							{!isTaskExpanded && <span style={{ marginLeft: 4 }}>{highlightMentions(task.text, false)}</span>}
 						</div>
 					</div>
-					{/* {!isTaskExpanded && isCostAvailable && (
+					{!isTaskExpanded && isCostAvailable && (
 						<div
 							style={{
 								marginLeft: 10,
@@ -181,7 +253,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							}}>
 							${totalCost?.toFixed(4)}
 						</div>
-					)} */}
+					)}
 					<VSCodeButton appearance="icon" onClick={onClose} style={{ marginLeft: 6, flexShrink: 0 }}>
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
@@ -224,8 +296,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 										style={{
 											width: 30,
 											height: "1.2em",
-											background:
-												"linear-gradient(to right, transparent, var(--vscode-badge-background))",
+											background: "linear-gradient(to right, transparent, var(--vscode-badge-background))",
 										}}
 									/>
 									<div
@@ -237,7 +308,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 											backgroundColor: "var(--vscode-badge-background)",
 										}}
 										onClick={() => setIsTextExpanded(!isTextExpanded)}>
-										{String(t("chat.task.seeMore"))}
+										See more
 									</div>
 								</div>
 							)}
@@ -252,84 +323,166 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									paddingRight: 2,
 								}}
 								onClick={() => setIsTextExpanded(!isTextExpanded)}>
-								{String(t("chat.task.seeLess"))}
+								See less
 							</div>
 						)}
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
-						<div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+						<div
+							style={{
+								display: "flex",
+								flexDirection: "column",
+								gap: "4px",
+							}}>
 							<div
 								style={{
 									display: "flex",
 									justifyContent: "space-between",
 									alignItems: "center",
+									height: 17,
 								}}>
-								<div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
-									<span style={{ fontWeight: "bold" }}>{String(t("chat.task.tokens"))}:</span>
-									<span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "4px",
+										flexWrap: "wrap",
+									}}>
+									<span style={{ fontWeight: "bold" }}>Tokens:</span>
+									<span
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "3px",
+										}}>
 										<i
 											className="codicon codicon-arrow-up"
-											style={{ fontSize: "12px", fontWeight: "bold", marginBottom: "-2px" }}
+											style={{
+												fontSize: "12px",
+												fontWeight: "bold",
+												marginBottom: "-2px",
+											}}
 										/>
 										{formatLargeNumber(tokensIn || 0)}
 									</span>
-									<span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+									<span
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "3px",
+										}}>
 										<i
 											className="codicon codicon-arrow-down"
-											style={{ fontSize: "12px", fontWeight: "bold", marginBottom: "-2px" }}
+											style={{
+												fontSize: "12px",
+												fontWeight: "bold",
+												marginBottom: "-2px",
+											}}
 										/>
 										{formatLargeNumber(tokensOut || 0)}
 									</span>
 								</div>
-								{!isCostAvailable && <ExportButton />}
-							</div>
-
-							<div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
-								<span style={{ fontWeight: "bold" }}>{String(t("chat.task.context"))}:</span>
-								<span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-									{contextTokens
-										? `${formatLargeNumber(contextTokens)} (${contextPercentage}%)`
-										: "-"}
-								</span>
+								{!isCostAvailable && (
+									<DeleteButton taskSize={formatSize(currentTaskItem?.size)} taskId={currentTaskItem?.id} />
+								)}
 							</div>
 
 							{shouldShowPromptCacheInfo && (cacheReads !== undefined || cacheWrites !== undefined) && (
-								<div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
-									<span style={{ fontWeight: "bold" }}>{String(t("chat.task.cache"))}:</span>
-									<span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "4px",
+										flexWrap: "wrap",
+									}}>
+									<span style={{ fontWeight: "bold" }}>Cache:</span>
+									<span
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "3px",
+										}}>
 										<i
 											className="codicon codicon-database"
-											style={{ fontSize: "12px", fontWeight: "bold", marginBottom: "-1px" }}
+											style={{
+												fontSize: "12px",
+												fontWeight: "bold",
+												marginBottom: "-1px",
+											}}
 										/>
 										+{formatLargeNumber(cacheWrites || 0)}
 									</span>
-									<span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+									<span
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "3px",
+										}}>
 										<i
 											className="codicon codicon-arrow-right"
-											style={{ fontSize: "12px", fontWeight: "bold", marginBottom: 0 }}
+											style={{
+												fontSize: "12px",
+												fontWeight: "bold",
+												marginBottom: 0,
+											}}
 										/>
 										{formatLargeNumber(cacheReads || 0)}
 									</span>
 								</div>
 							)}
+							{ContextWindowComponent}
 							{isCostAvailable && (
 								<div
 									style={{
 										display: "flex",
 										justifyContent: "space-between",
 										alignItems: "center",
+										height: 17,
 									}}>
-									<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-										<span style={{ fontWeight: "bold" }}>{String(t("chat.task.apiCost"))}:</span>
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "4px",
+										}}>
+										<span style={{ fontWeight: "bold" }}>API Cost:</span>
 										<span>${totalCost?.toFixed(4)}</span>
 									</div>
-									<ExportButton />
+									<DeleteButton taskSize={formatSize(currentTaskItem?.size)} taskId={currentTaskItem?.id} />
+								</div>
+							)}
+							{checkpointTrackerErrorMessage && (
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "8px",
+										color: "var(--vscode-editorWarning-foreground)",
+										fontSize: "11px",
+									}}>
+									<i className="codicon codicon-warning" />
+									<span>
+										{checkpointTrackerErrorMessage}
+										{checkpointTrackerErrorMessage.includes("Git must be installed to use checkpoints.") && (
+											<>
+												{" "}
+												<a
+													href="https://github.com/cline/cline/wiki/Installing-Git-for-Checkpoints"
+													style={{
+														color: "inherit",
+														textDecoration: "underline",
+													}}>
+													See here for instructions.
+												</a>
+											</>
+										)}
+									</span>
 								</div>
 							)}
 						</div>
 					</>
 				)}
 			</div>
-			{/* {llmProvider === "" && (
+			{/* {apiProvider === "" && (
 				<div
 					style={{
 						backgroundColor: "color-mix(in srgb, var(--vscode-badge-background) 50%, transparent)",
@@ -383,21 +536,41 @@ export const highlightMentions = (text?: string, withShadow = true) => {
 	})
 }
 
-const ExportButton = () => {
-	const { t } = useTranslation()
-	return (
-		<VSCodeButton
-			appearance="icon"
-			onClick={() => vscode.postMessage({ type: "exportCurrentTask" })}
-			style={
-				{
-					// marginBottom: "-2px",
-					// marginRight: "-2.5px",
-				}
-			}>
-			<div style={{ fontSize: "10.5px", fontWeight: "bold", opacity: 0.6 }}>{String(t("chat.task.export"))}</div>
-		</VSCodeButton>
-	)
-}
+const DeleteButton: React.FC<{
+	taskSize: string
+	taskId?: string
+}> = ({ taskSize, taskId }) => (
+	<VSCodeButton
+		appearance="icon"
+		onClick={() => vscode.postMessage({ type: "deleteTaskWithId", text: taskId })}
+		style={{ padding: "0px 0px" }}>
+		<div
+			style={{
+				display: "flex",
+				alignItems: "center",
+				gap: "3px",
+				fontSize: "10px",
+				fontWeight: "bold",
+				opacity: 0.6,
+			}}>
+			<i className={`codicon codicon-trash`} />
+			{taskSize}
+		</div>
+	</VSCodeButton>
+)
+
+// const ExportButton = () => (
+// 	<VSCodeButton
+// 		appearance="icon"
+// 		onClick={() => vscode.postMessage({ type: "exportCurrentTask" })}
+// 		style={
+// 			{
+// 				// marginBottom: "-2px",
+// 				// marginRight: "-2.5px",
+// 			}
+// 		}>
+// 		<div style={{ fontSize: "10.5px", fontWeight: "bold", opacity: 0.6 }}>EXPORT</div>
+// 	</VSCodeButton>
+// )
 
 export default memo(TaskHeader)

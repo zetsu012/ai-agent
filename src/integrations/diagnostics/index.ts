@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
+import * as path from "path"
 import deepEqual from "fast-deep-equal"
-import { PathUtils } from "../../services/checkpoints/CheckpointUtils"
 
 export function getNewDiagnostics(
 	oldDiagnostics: [vscode.Uri, vscode.Diagnostic[]][],
@@ -79,7 +79,7 @@ export function diagnosticsToProblemsString(
 	for (const [uri, fileDiagnostics] of diagnostics) {
 		const problems = fileDiagnostics.filter((d) => severities.includes(d.severity))
 		if (problems.length > 0) {
-			result += `\n\n${PathUtils.relativePath(cwd, uri.fsPath).toPosix()}`
+			result += `\n\n${path.relative(cwd, uri.fsPath).toPosix()}`
 			for (const diagnostic of problems) {
 				let label: string
 				switch (diagnostic.severity) {

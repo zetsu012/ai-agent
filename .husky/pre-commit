@@ -1,12 +1,17 @@
-branch="$(git rev-parse --abbrev-ref HEAD)"
+echo "Running pre-commit checks..."
 
-if [ "$branch" = "main" ]; then
-  echo "You can't commit directly to main - please check out a branch."
-  exit 1
-fi
+# Run ESLint
+echo "Running ESLint..."
+npm run lint || {
+    echo "❌ ESLint check failed. Please fix the errors and try committing again."
+    exit 1
+}
 
-npx lint-staged
+# Run Prettier
+echo "Running Prettier..."
+npm run format || {
+    echo "❌ Prettier check failed. Run 'npm run format:fix' to automatically fix formatting issues."
+    exit 1
+}
 
-npm run compile
-npm run lint
-npm run check-types
+echo "✅ All checks passed!"
